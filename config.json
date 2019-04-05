@@ -1,0 +1,80 @@
+{
+  "env": "prod",
+  "shared_key":"tototo",
+  "exchange":{
+    "host": "localhost",
+    "port": "50052"
+  },
+  "limits": {
+    "delta": 20,
+    "vega": 20,
+    "one": 20
+  },
+  "groups": {
+    "case1": ["case1.par", "distributor.py"],
+    "case2": ["case2.par", "case_two_bot.par", "distributor.py"]
+  },
+  "processes": {
+    "case2.par": {
+        "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && python __n__ > /dev/null 2>&1 &"
+    },
+    "case_two_bot.par": {
+        "start": "cd exchange && python __n__ > /dev/null 2>&1 &"
+    },
+    "case1.par": {
+        "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && python __n__ > /dev/null 2>&1 &"
+    },
+    "distributor.py": {
+        "port":"5046",
+        "host": "0.0.0.0",
+        "static_path": "src/server",
+        "get_path": "",
+        "start": "mkdir -p .logs && python __n__ > .logs/__n__.log 2>&1 &"
+    },
+    "market_maker.py": {
+      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "strategy": "christian",
+      "client_id": "",
+      "client_pk": "",
+      "connect_to": ["distributor.py"],
+      "strategies": {
+        "random": { "better": 0.01, "quantity": 1 },
+        "paul": { "bound": 5 },
+        "christian": { "quantity": 15 }
+      }
+    },
+    "case1.py": {
+      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "strategy": "christian",
+      "client_id": "",
+      "client_pk": "",
+      "connect_to": ["distributor.py"],
+      "strategies": {
+        "random": { "better": 0.01, "quantity": 1 },
+        "paul": { "bound": 5 },
+        "christian": { "quantity": 15 }
+      }
+    }
+  },
+  "underlying":"IDX#PHX",
+  "options": {
+    "C98PHX" : {"flag":"c", "K":98},
+    "C99PHX" : {"flag":"c", "K":99},
+    "C100PHX" : {"flag":"c", "K":100},
+    "C101PHX" : {"flag":"c", "K":101},
+    "C102PHX" : {"flag":"c", "K":102},
+    "P98PHX" : {"flag":"p", "K":98},
+    "P99PHX" : {"flag":"p", "K":99},
+    "P100PHX" : {"flag":"p", "K":100},
+    "P101PHX" : {"flag":"p", "K":101},
+    "P102PHX" : {"flag":"p", "K":102}
+  },
+  "case1": {
+    "K" : {"flag":"May", "n":5},
+    "M" : {"flag":"June", "n":6},
+    "N" : {"flag":"July", "n":7},
+    "Q" : {"flag":"August", "n":8},
+    "U" : {"flag":"September", "n":9},
+    "V" : {"flag":"October", "n":10}
+  }
+}
