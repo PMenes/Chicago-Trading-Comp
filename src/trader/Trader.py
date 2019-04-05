@@ -81,8 +81,8 @@ class Trader(SendExchangeGrpcClient):
         for cls in [a.mbids, a.masks]:
             price = get(cls, 0) + better * min(1, bias / q) # increase with position
             price = u.between(wbid, price, wask)
-            live = 0 if abs(p) > 50 and cls.sens == u.sign(p) else 1
-            for k in ["delta","vega"]: self.prep[k] += cls.sens*q * self.assets[cls.name].status[k] # greeks if/after filled
+            live = 0 if abs(p) > 3*q and cls.sens == u.sign(p) else 1
+            for k in self.watch: self.prep[k] += cls.sens*q * self.assets[cls.name].status[k] # greeks if/after filled
             self.prep["trades"].append( {"name":cls.name, "price":price, "quantity": cls.sens*q, "live": live} )
 
     async def send_exchange_updates(self, num, upd):
@@ -91,6 +91,7 @@ class Trader(SendExchangeGrpcClient):
 
         self.alerts = []; self.info = ''; self.meta = {} # reset alerts, info
         a = self.assets; perf = self.perf; self.num = num # ..meta, perf, num
+        self.prep = {"trades": []}; self.watch = []
         self.logger.setPrefix(format(num, "04d")) # logger prefix = new num
         perf.reset(num) # keep track of time and performance.
 
@@ -112,9 +113,6 @@ class Trader(SendExchangeGrpcClient):
         #   has gone our way (or not!) after the fills: not done
         await self.maybe_chock()
         perf.step("chock 1")
-
-        for u in upd.market_updates: # then markets, we need it to get underlying
-            self.debug(u.asset.asset_code) # update bids and asks
 
         for u in upd.market_updates: # then markets, we need it to get underlying
             m = a[u.asset.asset_code] # update bids and asks
@@ -141,6 +139,7 @@ class Trader(SendExchangeGrpcClient):
         await self.distribute(fills) # send status to distributor (for web)
         perf.step("send")
         perf.step("ALL", perf.reft)
+        fills=0; upd=0
 
 
     # normally, don't touch it
@@ -159,6 +158,7 @@ class Trader(SendExchangeGrpcClient):
         try:
             dist = self.p["connect_to"][0]
             await self.connections[dist]["ws"].send_json(snd, False)
+            snd=0
         except Exception as e:
             print("Error sending", e)
 

@@ -9,12 +9,18 @@ import src.utils as u
 
 class BaseExchangeGrpcClient():
     def __init__(self, file):
-        self.logger = u.new_logger(file, f'.logs/{file}.txt').thisClassLogger(self, "main")
         self.c = c = u.config; self.p = p = c["processes"][file]
+
+        self.logger = u.new_logger(file, f'.logs/{file}.txt').thisClassLogger(self, "main")
+        l = p.get("log", [])
+        if len(l): self.logger.setLevel(l.pop(0))
+        for k in l: self.logger.accept(k)
+
         h = c["exchange"]; channel = insecure_channel('%s:%s' % (h["host"], h["port"]))
         self._stub = ExchangeServiceStub(channel)
         self.connections = {}
         self.slowdown = 0
+        self.rtt = c["rtt"] # round-trip time
 
     def start(self):
         tasks = []
@@ -58,7 +64,9 @@ class BaseExchangeGrpcClient():
                 # print("============================== i ================================")
                 # print(exchange_update_response)
                 # if i> 20: raise ValueError("couocu")
-                i+=1; await self.send_exchange_updates(i, exchange_update_response)
+                i+=1;
+                await asyncio.sleep(self.rtt/2)
+                await self.send_exchange_updates(i, exchange_update_response)
             except Exception as e:
                 self.fatal(e)
                 print("ess traceback")

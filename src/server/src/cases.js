@@ -8,7 +8,8 @@ var Case1 = class extends Update {
     t.kcharts = Object.entries(c.case1).sort((a, b) => a[1].n - b[1].n).map(i=>i[0])
     console.log("t.kcharts", t.kcharts)
     t.assets = {}
-    t.kcharts.map(k=> {t.assets[k] = t.kcharts[k]})
+    t.kcharts.map(k=> {t.assets[k] = c.case1[k]})
+    // t.koptions.map(k=> {t.assets[k] = c.options[k]})
     t.upperlines = []
     t.lowerlines = "one,pnl".split(",")
     t.lowercharts = t.lowerlines

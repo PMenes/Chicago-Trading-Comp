@@ -1,4 +1,5 @@
 import json
+import asyncio
 from exchange.protos.order_book_pb2 import Order
 from exchange.protos.service_pb2 import PlaceOrderResponse, ModifyOrderResponse
 
@@ -45,6 +46,7 @@ class SingleOrder():
         self.cancelled = 0
         self.quantity = 0
         self.filled = 0
+        self.rtt = self.all.master.rtt
 
     def show(self, h={}):
         if not self.oklog: return "nothing" # we don't want to spend cpu time on json.dumps for nothing
@@ -65,8 +67,9 @@ class SingleOrder():
                  order_type = h["order_type"], competitor_identifier = self.all.master._comp_id)
 
     def fill(self, f, fills):
-        if self.cancelled: self.warning("Sorry but cancelled order filled:", self.all.name, self.h)
         o = f.order; oid = o.order_id; hq=self.h["quantity"]
+        q = round(self.all.sens * f.filled_quantity) # signed quantity
+        if self.cancelled: self.warning("Sorry, cancelled order filled:", self.show({"fill": q}))
         u.push(self.all.master.alerts, self.h["alert"]) # take care of alerts !!!
 
         def err(fv, typ, m): # check (well you never know....)
@@ -75,19 +78,20 @@ class SingleOrder():
         if round(o.price,2) != self.h["price"] and self.h["num"]<self.all.master.num-1: err(o.price, "price", "not same")
         if f.filled_quantity > abs(hq): err(f.filled_quantity, 'quantity', 'too much')
 
-        q = round(self.all.sens * f.filled_quantity) # signed quantity
         self.filled += q; self.lastfill = q
         dist = {"price":o.price, "size":abs(q), "quantity":q, "alert": self.h["alert"]}
         fills[self.all.typ].append(dist)
         self.h["quantity"] -= q; self.h["size"] -= f.filled_quantity
         if self.h["quantity"] <= 0: self.all.delete_order(self)
-        self.info("filled ", self.show({"fill": q, "filled": self.filled}))
+        self.info("filled ", self.show({"this_fill": q, "total_filled": self.filled}))
         return self
 
     async def create(self, h):
         if self.all.sens * h["quantity"] < 0: return None # quantity and sens must be the same
         o = self.make_order(h)
+        await asyncio.sleep(self.rtt/2)
         resp = await self.all.master.place_order(o)
+        await asyncio.sleep(self.rtt/2)
         if type(resp) != PlaceOrderResponse:
             u.makerr(ValueError, self.logger,"Error, could NOT place_order", resp, h); return
         self.oid = h["order_id"] = resp.order_id; self.filled = 0; self.h = h
@@ -108,12 +112,18 @@ class SingleOrder():
 
     async def mock_modify_order(self, h):
         self.debug("mock_modify..", self.show(h))
-        x = await self.cancel_order()
-        return await self.all.place_order(h) if x else 0
+        t1 = asyncio.create_task( self.cancel_order() )
+        t2 = asyncio.create_task( self.all.place_order(h) )
+        await t1; await t2
+        return t2.result()
+        # x = await self.cancel_order()
+        # return await self.all.place_order(h) if x else 0
 
     async def cancel_order(self):
         if self.cancelled: return
+        await asyncio.sleep(self.rtt/2)
         resp = await self.all.master.cancel_order(self.oid)
+        await asyncio.sleep(self.rtt/2)
         if not resp.success: return self.warning("Error, could NOT cancel order", self.oid)
         self.debug("cancelled", self.show())
         self.all.master.assets[self.all.name].to_clean.append(self.oid)

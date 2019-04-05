@@ -7,15 +7,16 @@ from src.trader.Instrument import Instrument
 from src.trader.Option import Option
 
 class MarketMaker(Trader):
-    def __init__(self):
-        Trader.__init__(self, __file__)
+    def __init__(self, file=0):
+        file = file or __file__
+        Trader.__init__(self, file)
 
         # init assets (=options or instruments)
         c = self.c
         # self.assets = {c["underlying"]: Instrument(c["underlying"], self)}
         # for k,v in c["options"].items(): self.assets[k] = Option(k, self, v)
         self.assets = {}
-        for k,v in c["case1"].items(): self.assets[f'IDX#UC{k}'] = Instrument(k, self, v)
+        for k,v in c["case1"].items(): self.assets[k] = Instrument(k, self, v)
 
         self.store = {} # if you want to store something across cycles
         self.every = 1 # ex: 2 will send only 1 out of 2 updates to the distributor
@@ -28,7 +29,7 @@ class MarketMaker(Trader):
 
     async def init_update(self):
         self.do_not_trade_more = 0
-        self.prep = {"trades": []}
+        self.watch = ["one"]
         self.slowdown = 0 # in seconds. Artificially raises the time between each update
         self.traded = 0
         # self.debug("New Update:", self.num)
@@ -42,7 +43,7 @@ class MarketMaker(Trader):
 
     async def trade_christian(self):
         if self.traded: return
-        for k in ["one"]: self.prep[k] = self.pos_updated[k] # init with current delta and vega
+        for k in self.watch: self.prep[k] = self.pos_updated[k] # init with current delta and vega
         q = self.sp["quantity"]
         for k,a in self.assets.items(): # get trade options first
             # if a.name[:3] == "IDX": continue
@@ -52,16 +53,16 @@ class MarketMaker(Trader):
 
         if abs(self.prep["one"])>self.c["limits"]["one"]: # if we will be over limits vega, increase size of "good" trades
             # self.warning("over1:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
-            v = u.sign( self.prep["vega"] )
+            v = u.sign( self.prep["one"] )
             for t in self.prep["trades"]:
                 s=self.assets[t["name"]].status; q = t["quantity"]
-                if u.sign(s["one"] * q) != v:
-                    t["quantity"] *= 2 #; self.prep["delta"] += q*s["delta"]
+                if u.sign(s["one"] * q) == v: t["live"] = 0
+                # if u.sign(s["one"] * q) != v: t["quantity"] *= 2
 
             # self.warning("over2:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
         #
-        # if abs(self.prep["delta"])>self.c["limits"]["delta"]: # if we will be over limits delta, hedge it
-        #     self.warning("over delta:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
+        # if abs(self.prep["one"])>self.c["limits"]["one"]: # if we will be over limits delta, hedge it
+        #     self.warning("over limit:", "pos=",self.prep["one"])
         #     n="IDX#PHX"; a = self.assets[n]
         #     q = round( -self.prep["delta"] - a.status["pos"], 0); sens = u.sign(q)
         #     cls = a.mbids if q>0 else a.masks

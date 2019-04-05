@@ -51,7 +51,8 @@ Grid.prototype = {
     $.each(updater.upperlines, (i, v) => t.line(`${v}-num`))
     r = t.cur.mr
     t.line("chart", {r:r, sr:20, sc:1, chart:1})
-    r = t.cur.mr
+    r = t.cur.mr;
+    var keep = r
     updater.lowerlines.map(v=> t.line(`${v}_pos-num`))
     r = t.cur.mr
     // t.box("hist-IDXPHX", {r:r, c:1, sr:8, sc:3, chart:1})
@@ -59,7 +60,7 @@ Grid.prototype = {
 
     updater.lowerlines.map((v,i) => { t.box(`${v}-label`, {r: i+3, c:1, sc:2}) })
     // "price,delta,vega,sigma,pos".split(",").map((v,i) => { t.box(`${v}-label`, {r: i+3, c:1, sc:2}) })
-    updater.lowerlines.map((v,i)=> t.line(`${v}_pos`, {r: 28+i, c:1, cols:["label", "num-sum"]}))
+    updater.lowerlines.map((v,i)=> t.line(`${v}_pos`, {r: keep+i, c:1, cols:["label", "num-sum"]}))
     r = 9
     "cycles,trades,info,pnl,fines".split(",").map((v,i)=>{
       t.line(`${v}`, {r:r+i*2, sr:2, c:1, cols:["label", "num"]})
@@ -100,7 +101,7 @@ Grid.prototype = {
   formatGrid: function() {
     var t = this; var x
     $(".label").each((i,el)=>$(el).html(el.id.split("-")[0]+":"))
-    updater.newMsg(htuid)
+    updater.newMsg(htcase1)
     return this
   }
 }

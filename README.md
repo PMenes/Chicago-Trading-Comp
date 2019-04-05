@@ -27,11 +27,11 @@
 
 - for case 1 (not working yet):
     - `run case`
-    - `python case1`
+    - `python case1.py`
     - in your browser (firefox), open http://localhost:5046/#case1
 
 
-- To stop: `run caseX -stop`
+- To stop: `run caseX -stop` (X being 1 or 2)
 
 ### changing strategies
 
@@ -49,6 +49,7 @@ Test all strategies !
 That's the file storing all parameters. Some tips:
 
 - exchange: change the IP and ports according to which exchange you want to connect to.
+    It could be a remote exchange, doesn't have to be your local computer one.
 
 - processes: if you change them, make sure you keep the order: "case_two_bot.par" need "server.par" to have started first, and "market_maker.py" need "distributor.py" (unless you take it out in the "connect_to" parameter) for example.
 

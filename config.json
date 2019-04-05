@@ -1,6 +1,7 @@
 {
   "env": "prod",
   "shared_key":"tototo",
+  "rtt": 0.04,
   "exchange":{
     "host": "localhost",
     "port": "50052"
@@ -11,18 +12,21 @@
     "one": 20
   },
   "groups": {
-    "case1": ["case1.par", "distributor.py"],
+    "case1": ["case1.par", "case_one_bot.par", "distributor.py"],
     "case2": ["case2.par", "case_two_bot.par", "distributor.py"]
   },
   "processes": {
     "case2.par": {
-        "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && python __n__ > /dev/null 2>&1 &"
+        "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && ln -sf __n__.json price_setter_config.json && python __n__ > /dev/null 2>&1 &"
     },
     "case_two_bot.par": {
         "start": "cd exchange && python __n__ > /dev/null 2>&1 &"
     },
     "case1.par": {
-        "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && python __n__ > /dev/null 2>&1 &"
+      "start": "cd exchange/server/continuous_exchange && ln -sf __n__.textproto exchangeconfig.textproto &&  cd ../.. && ln -sf __n__.json price_setter_config.json && python __n__ > /dev/null 2>&1 &"
+    },
+    "case_one_bot.par": {
+        "start": "cd exchange && python __n__ > /dev/null 2>&1 &"
     },
     "distributor.py": {
         "port":"5046",
@@ -34,9 +38,10 @@
     "market_maker.py": {
       "start": "python __n__ > .logs/__n__.log 2>&1 &",
       "strategy": "christian",
-      "client_id": "",
-      "client_pk": "",
+      "client_id": "mm",
+      "client_pk": "mm",
       "connect_to": ["distributor.py"],
+      "log": ["DEBUG", "main", "perf"],
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },
         "paul": { "bound": 5 },
@@ -48,7 +53,32 @@
       "strategy": "christian",
       "client_id": "",
       "client_pk": "",
+      "log": ["INFO", "main"],
       "connect_to": ["distributor.py"],
+      "strategies": {
+        "random": { "better": 0.01, "quantity": 1 },
+        "paul": { "bound": 5 },
+        "christian": { "quantity": 10 }
+      }
+    },
+    "xcpt1.py": {
+      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "strategy": "christian",
+      "client_id": "cp1",
+      "client_pk": "cp1",
+      "connect_to": [],
+      "strategies": {
+        "random": { "better": 0.01, "quantity": 1 },
+        "paul": { "bound": 5 },
+        "christian": { "quantity": 15 }
+      }
+    },
+    "xcpt2.py": {
+      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "strategy": "random",
+      "client_id": "cp2",
+      "client_pk": "cp2",
+      "connect_to": [],
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },
         "paul": { "bound": 5 },

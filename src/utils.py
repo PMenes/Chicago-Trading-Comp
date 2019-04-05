@@ -99,8 +99,8 @@ def launch_server(cls):
         c.stop()
 
 # launch processes: async
-def launch_server_async(cls):
-    c=cls()
+def launch_server_async(cls, file=0):
+    c=cls(file)
     try:
         loop = asyncio.get_event_loop()
         tasks = c.start()

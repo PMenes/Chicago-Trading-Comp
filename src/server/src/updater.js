@@ -16,9 +16,10 @@ var Update = class {
   newMsg(m) {
     var t = this
     while (!t.ok) return setTimeout(t.newMsg.bind(t,m), 10)
-    // this.i++; if(this.i>5) return
-    // console.log(m); return
-    console.log(`================== ${m.num} ==============================`)
+    // this.i++; if(this.i>15) return
+    // console.log(m);
+    // return
+    console.log(`================== ${m.cycles} ==============================`)
     startTime = tNow()
     "cycles,info,pnl,fines".split(",").map(x=>t.chgNum(`#${x}-num`, m[x] || m.meta[x] || ""))
     m.assets["IDXPHX"] = hdel(m.assets, "IDX#PHX")
@@ -34,12 +35,13 @@ var Update = class {
     })
     t.afterallcharts(sums)
     t.chgNum(`#trades-num`, t.trades)
+    m=0; sums=0
     elapsed("all charts")
   }
 
   fillChart(k, asset, sums) {
     var t = this
-    console.log("k=", k)
+    // console.log(t.assets)
     var h = Object.assign(t.assets[k], asset.status)
     h.name = k // remove the # which screws up everything
 
@@ -65,11 +67,13 @@ var Update = class {
         })
       })
     })
+    setTimeout(()=>{}, 0)
     t.beforeupperchart(k, data, sums)
     chart.remove(".datall").remove(".yaxis").yAxis({domain:[round(mm.min,2,-1), round(mm.max,2,1)]})
     var tt = d=>[`price=${round(d.price,2)}`,`size=${d.size}`,`strike=${d.K?round(d.K):''}`,`source=${d.source}`,`type=${d.boa}`].join("<br/>")
     chart.points(data.market.concat(data.orders).concat(data.fills), {}, tt)
     t.trades += data.fills.length
+    data=0; setTimeout(()=>{}, 0)
   }
 
   getmid(mkts) {
@@ -81,7 +85,6 @@ var Update = class {
     if(mm.asks===2000) console.error("no ask!!!!!!!!", mkts)
     if(mm.bids===0) console.error("no bid!!!!!!!!", mkts)
     var ret =  mm.asks===2000 || mm.bids===0 ? 0 :(mm.bids+mm.asks)/2
-    console.log("getmid", ret)
     return ret
   }
   testlower(name, n) {
@@ -91,8 +94,6 @@ var Update = class {
       mm.bids = Math.max(mm.bids, res); mm.asks = Math.min(mm.asks, res)
       return round(res,2)
     });
-    console.log(arr)
-    // var opt = {getx:(d, i) => i, gety:(d, i) => d}
     chart.remove(".datall").remove(".yaxis").yAxis({domain:[round(mm.bids,2,-1), round(mm.asks,2,1)]})
     chart.line(arr)
   }

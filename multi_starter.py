@@ -46,8 +46,8 @@ class Processor():
 
     def stop(self):
         a = [i for i in self.config["processes"].keys()]; a.reverse()
-        print(a)
-        print("stopping", a)
+        # print(a)
+        print("stopping all:", ",".join(a))
         for p in a: self._kill( self._running(p), p)
         # print("stopping", self.desc)
         # for p in self.desc: self._kill( self._running(p), p)
@@ -58,6 +58,4 @@ if __name__ == "__main__":
     parser.add_argument('-stop', dest='isStart', action='store_false')
     parser.add_argument('-start', dest='isStart', action='store_true')
     parser.set_defaults(isStart=True)
-    # print(parser.parse_args())
-    # print(Processor(parser.parse_args()).go)
     Processor(parser.parse_args()).go()
