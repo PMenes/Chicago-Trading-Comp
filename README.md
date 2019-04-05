@@ -3,31 +3,44 @@
 
 ### installation
 
-- create your working folder ex: myfolder
-- get the boostrap.sh file somewhere... and copy it to myfolder
-- cd to myfolder
-- run `bash bootstrap.sh`
+- `git clone https://github.com/PMenes/ucess.git`
+- make sure your virtual env is python > 3.6
+- run `pip install -r src/scripts/requirements.txt`
 
-This should have installed the full progam on your computer (not really tested though..)
+###### for updates
+- just `git pull`
+- ... and maybe re-run `pip install -r src/scripts/requirements.txt`
 
 
 ### quick start
 
-- run `python run.py all`
-- in your browser (firefox), open http://localhost:5046
+- first `export PATH="$PATH:./src/scripts"`
 
-If everything went well, you should see the random strategy running.
+    so that you can use the shortcut 'run' (instead of 'python multi_starter.py')
 
-To stop, run `python run.py all -stop`
+- ..then, for case 2:
+    - `run case2`
+    - `python market_maker.py`
+    - in your browser (firefox), open http://localhost:5046/#case2
+
+    If everything went well, you should see the random strategy running.
+
+- for case 1 (not working yet):
+    - `run case`
+    - `python case1`
+    - in your browser (firefox), open http://localhost:5046/#case1
+
+
+- To stop: `run caseX -stop`
 
 ### changing strategies
 
-market_maker.py includes 3 example strategies: "default", "paul" and "christian"
+market_maker.py includes 3 example strategies: "random", "paul" and "christian"
 
 Example: to run the "paul" strategy:
 
 - open config.json
-- change "strategy": "default" with "strategy": "paul"
+- in the process key "market_maker.py", change "strategy": "random" with "strategy": "paul"
 
 Test all strategies !
 
@@ -56,11 +69,9 @@ If you do, make sure to update the config file with your file name.
 ###### Tips
 - You could change the "env" parameter "dev" instead of "prod" to throw on exceptions.
 
-- when developping, run first
+- you can change the groups *case1* or *case2*, or create more groups. If you create a new group, just do `run mynewgroup`
 
-    `python run.py server.par case_two_bot.par distributor.py -start`
-
-- ... then run your file `python myfile.py`
+- ... then run your file `python mytraderfile.py`
 
 
 ### structure of programs
@@ -74,12 +85,3 @@ If you open a port on your router, they can do it from anywhere in the world. Be
 Note that we did not program any client input back to market_maker.py, but you could if you want to alter the automated trading from your browser.
 
 You'll need to adapt distributor.py and market_maker.py to do that obviously, but that's not rocket science.
-
-
-### for updates
-
-In case of updates:
-
-- go to your folder (ex: myfolder)
-- get the update.sh file somewhere... and copy it to myfolder
-- run `bash update.sh`
