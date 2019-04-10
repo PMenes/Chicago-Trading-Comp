@@ -49,7 +49,7 @@ config = {
       "connect_to": ["distributor.py"], # to see the startegy running on the browser
       "log": ["DEBUG", "main", "perf"], # logs you want to see on console
       "loggers":[
-          {"typ": "console", "level":"DEBUG", "filters": "main|P102PHX|perf"},
+          {"typ": "console", "level":"DEBUG", "filters": "main|P102PHX"},
           {"typ": "file","level":"ERROR", "filename":".logs/market_maker.py.txt"}
       ],
       "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)

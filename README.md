@@ -4,7 +4,7 @@
 ### installation
 
 - `git clone https://github.com/PMenes/ucess.git`
-- make sure your virtual env is python > 3.6
+- make sure your virtual env is python > 3.7
 - run `pip install -r src/scripts/requirements.txt`
 
 ###### for updates
