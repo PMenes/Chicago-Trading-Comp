@@ -1,3 +1,4 @@
+import asyncio
 from exchange.protos.order_book_pb2 import Order
 from exchange.protos.service_pb2 import (
     RegisterCompetitorRequest,
@@ -27,21 +28,27 @@ class SendExchangeGrpcClient(BaseExchangeGrpcClient):
 
     async def place_order(self, order: Order):
         try:
-            return await self._stub.PlaceOrder(PlaceOrderRequest(competitor_identifier=self._comp_id, order=order))
+            x= await self._stub.PlaceOrder(PlaceOrderRequest(competitor_identifier=self._comp_id, order=order))
         except Exception as e:
-            return e
+            x= e
+        await asyncio.sleep(self.rtt/2)
+        return x
 
     async def modify_order(self, order_id: str, new_order: Order):
         try:
-            return await self._stub.ModifyOrder(ModifyOrderRequest(competitor_identifier=self._comp_id, order_id=order_id, new_order=new_order))
+            x= await self._stub.ModifyOrder(ModifyOrderRequest(competitor_identifier=self._comp_id, order_id=order_id, new_order=new_order))
         except Exception as e:
-            return e
+            x= e
+        await asyncio.sleep(self.rtt/2)
+        return x
 
     async def cancel_order(self, order_id):
         try:
-            return await self._stub.CancelOrder(CancelOrderRequest(competitor_identifier=self._comp_id, order_id=order_id))
+            x= await self._stub.CancelOrder(CancelOrderRequest(competitor_identifier=self._comp_id, order_id=order_id))
         except Exception as e:
-            return e
+            x= e
+        await asyncio.sleep(self.rtt/2)
+        return x
 
     async def _register_competitor(self):
         await self._stub.RegisterCompetitor(RegisterCompetitorRequest(

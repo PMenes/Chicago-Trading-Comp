@@ -1,17 +1,23 @@
-{
-  "env": "prod",
-  "shared_key":"tototo",
-  "rtt": 0.04,
+config = {
+  "env": "dev", # change to "prod" to prevent throwing
+  "fast": 0, # todo
+  "shared_key":"tototo", # todo
+  "rtt": 0.04, # dev only, mock round-trip time, change to 0 on real competition or real server
   "exchange":{
     "host": "localhost",
     "port": "50052"
   },
-  "limits": {
-    "delta": 20,
+  "limits": { # internal limits
+    "delta": 5,
     "vega": 20,
     "one": 20
   },
-  "groups": {
+  "limits-fined": { # real competition limits
+    "delta": 25,
+    "vega": 25,
+    "one": 50
+  },
+  "groups": { # grouped launch, for "run" or "multi_starter.py"
     "case1": ["case1.par", "case_one_bot.par", "distributor.py"],
     "case2": ["case2.par", "case_two_bot.par", "distributor.py"]
   },
@@ -28,7 +34,7 @@
     "case_one_bot.par": {
         "start": "cd exchange && python __n__ > /dev/null 2>&1 &"
     },
-    "distributor.py": {
+    "distributor.py": { # distributes the processed fill for display on browser
         "port":"5046",
         "host": "0.0.0.0",
         "static_path": "src/server",
@@ -38,12 +44,17 @@
     "market_maker.py": {
       "start": "python __n__ > .logs/__n__.log 2>&1 &",
       "strategy": "christian",
-      "client_id": "mm",
+      "client_id": "baruch1",
       "client_pk": "mm",
-      "connect_to": ["distributor.py"],
-      "log": ["DEBUG", "main", "perf"],
+      "connect_to": ["distributor.py"], # to see the startegy running on the browser
+      "log": ["DEBUG", "main", "perf"], # logs you want to see on console
+      "loggers":[
+          {"typ": "console", "level":"DEBUG", "filters": "main|P102PHX|perf"},
+          {"typ": "file","level":"ERROR", "filename":".logs/market_maker.py.txt"}
+      ],
+      "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
       "strategies": {
-        "random": { "better": 0.01, "quantity": 1 },
+        "random": { "better": 0.01, "quantity": 1 }, # default strategy
         "paul": { "bound": 5 },
         "christian": { "quantity": 15 }
       }
@@ -53,12 +64,16 @@
       "strategy": "christian",
       "client_id": "",
       "client_pk": "",
-      "log": ["INFO", "main"],
+      "log": ["DEBUG", "main"],
+      "loggers": [
+          {"typ": "console", "level": "DEBUG", "filters": "main|C99PHX"},
+          {"typ": "file","level": "ERROR", "path":".logs/case1.py.txt"}
+      ],
       "connect_to": ["distributor.py"],
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },
         "paul": { "bound": 5 },
-        "christian": { "quantity": 10 }
+        "christian": { "quantity": 10, "better":0 }
       }
     },
     "xcpt1.py": {

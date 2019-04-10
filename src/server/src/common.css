@@ -24,6 +24,12 @@ body {
 .title {
   font-size: 100%;
 }
+.K { background-color: lavender}
+.M { background-color: thistle}
+.N { background-color: gainsboro}
+.Q { background-color: lightyellow}
+.U { background-color: moccasin}
+.V { background-color: khaki}
 
 .line {
     fill: none;
@@ -49,7 +55,11 @@ body {
   padding-right: 5px;
 }
 
-.price, .vega, .pos, .delta_pos, .pnl_pos {
+.pos.num, .pnl_pos.num {
+  font-weight: bold;
+}
+
+.price, .fines, .vega, .pos, .pri, .delta_pos, .pnl_pos, .price_pos {
   background-color: DarkGray;
 }
 .hist.vega {

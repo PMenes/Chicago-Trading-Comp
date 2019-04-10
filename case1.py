@@ -1,5 +1,6 @@
 import random
 import json
+import asyncio
 
 import src.utils as u
 from src.trader.Trader import Trader
@@ -20,6 +21,7 @@ class MarketMaker(Trader):
 
         self.store = {} # if you want to store something across cycles
         self.every = 1 # ex: 2 will send only 1 out of 2 updates to the distributor
+        self.fines = u.todict(["one"], self.fines_detail)
 
         # set logging filters (for development)
         self.logger.accept("main")
@@ -42,34 +44,19 @@ class MarketMaker(Trader):
         return
 
     async def trade_christian(self):
-        if self.traded: return
-        for k in self.watch: self.prep[k] = self.pos_updated[k] # init with current delta and vega
-        q = self.sp["quantity"]
+        """
+        given the rules, we have to trade so that it is IMPOSSIBLE to be over limits
+        """
+        self.fatal("pos====", self.pos_updated["pos"])
+        pos = self.pos_updated["pos"]; sens = u.sign(pos); apos=abs(pos)
+        bid_size = int((self.c["limits-fined"]["one"] - pos)/6)
+        ask_size = int((-self.c["limits-fined"]["one"] - pos)/6)
+        self.fatal("bid=", bid_size, "ask=", ask_size)
+        tasks = []
         for k,a in self.assets.items(): # get trade options first
-            # if a.name[:3] == "IDX": continue
-            self.get_spread(a, abs(q))
-
-        # self.warning("result:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
-
-        if abs(self.prep["one"])>self.c["limits"]["one"]: # if we will be over limits vega, increase size of "good" trades
-            # self.warning("over1:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
-            v = u.sign( self.prep["one"] )
-            for t in self.prep["trades"]:
-                s=self.assets[t["name"]].status; q = t["quantity"]
-                if u.sign(s["one"] * q) == v: t["live"] = 0
-                # if u.sign(s["one"] * q) != v: t["quantity"] *= 2
-
-            # self.warning("over2:", "vega=",self.prep["vega"], "delta=",self.prep["delta"])
-        #
-        # if abs(self.prep["one"])>self.c["limits"]["one"]: # if we will be over limits delta, hedge it
-        #     self.warning("over limit:", "pos=",self.prep["one"])
-        #     n="IDX#PHX"; a = self.assets[n]
-        #     q = round( -self.prep["delta"] - a.status["pos"], 0); sens = u.sign(q)
-        #     cls = a.mbids if q>0 else a.masks
-        #     self.prep["trades"].append( {"name":n, "price":cls.lst[0]["price"]+sens*0.01, "quantity": q, "live": 1} )
-
-        for o in self.prep["trades"]: await self.execute_trade(o)
-        self.traded = 1
+            for q in [bid_size, ask_size]:
+                tasks.append( asyncio.create_task(self.best_order(a, q, force_mod=True)))
+        for t in tasks: await t
 
     async def trade_paul(self):
         # your idea is to trade only on assets which would hedge BOTH our global vega and delta. Let's do that

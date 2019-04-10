@@ -32,7 +32,7 @@ Charts.Lower = class extends Chart {
     }
     // for updating
     t.hist = []; t.always = {getx:(d, i) => i, gety:(d, i) => d};
-    t.domain_add = (p) => p * 0.1
+    t.domain_add = (p) => p * 0.05
 
     super.start(o)
     // t.tickSize = {x: -t.height}

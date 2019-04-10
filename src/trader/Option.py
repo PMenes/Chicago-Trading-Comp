@@ -14,12 +14,13 @@ class Option(Instrument):
         x = opt.get("spread", 0); self.spread = x if x else 0.6
         x = opt.get("rounding", 0); self.rounding = x if x else 2
         Instrument.__init__(self, name, master, o)
+        self.histo = False
 
     def update_status(self):
         und = self.master.assets[self.master.c["underlying"]]
         h = self.calc_all({"F": und.mid_price(), "price": self.mid_price()})
         if h:
-            for k in self.keys: self.status[k] = h[k]
+            for k in self.greeks: self.status[k] = h[k]
         super().update_status()
         return self.status
 
@@ -40,18 +41,23 @@ class Option(Instrument):
     def calc_all(self, b):
         h = self.all_set(b)
         if not h: return False
-        self.civ(h) if not h.get("sigma", 0) else 0
+        if not h.get("sigma"): self.civ(h)
+        if not h.get("sigma"): return False
         a = (h["flag"], h["F"], h["K"], h["t"], h["r"], h["sigma"])
         r = self.rounding
         h["price"] = round(oprice(*a),r)
         h["delta"] = round(delta(*a),r)
-        h["gamma"] = round(gamma(*a),r)
+        h["gamma"] = round(gamma(*a)*100,r)
         h["vega"] = round(vega(*a),r)
         return h
 
     def civ(self, h):
-        x = iv(h["price"], h["F"], h["K"], h["t"], h["r"], h["flag"])
-        h["sigma"] = round(x,self.rounding)
+        try:
+            x = iv(h["price"], h["F"], h["K"], h["t"], h["r"], h["flag"])
+        except Exception as e:
+            self.warning(e)
+        else:
+            h["sigma"] = round(x,self.rounding)
 
 
 

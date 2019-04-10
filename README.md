@@ -30,6 +30,8 @@
     - `python case1.py`
     - in your browser (firefox), open http://localhost:5046/#case1
 
+    Note: case1 takes some time to start (like 30 seconds). Be patient !
+
 
 - To stop: `run caseX -stop` (X being 1 or 2)
 

@@ -7,9 +7,50 @@ import requests
 from types import SimpleNamespace as Namespace
 from functools import partial
 
-import src.trader.Logs as logs
+import src.logs as logs
 
-def new_logger(name=0,file=0): return logs.new_logger(name, file)
+# sugar for arrays and dicts
+def push(arr, elt):
+    if elt: arr.append(elt)
+    return elt
+def set(h, k, v):
+    if v: h[k] = v
+    return v
+
+def todict(keys, dft=0):
+    h={}
+    todef = lambda x: x if type(dft) != dict else update({}, x)
+    for k in keys: h[k] = todef(dft)
+    return h
+
+def update(dct, *oth):
+    for h in oth: dct.update(h or {})
+    return dct
+
+import os, errno
+
+def delfile(filename):
+    try:
+        os.remove(filename)
+    except OSError as e: # this would be "except OSError, e:" before Python 2.6
+        if e.errno != errno.ENOENT: raise # errno.ENOENT = no such file or directory; re-raise if not
+    return filename
+
+act = asyncio.create_task
+async def concurrent_tasks(tsks, fnc=0):
+    tsks = tsks if not fnc else [act( fnc(o) ) for o in tsks]
+    for t in tsks: await t
+    return [t.result() for t in tsks]
+
+sign = lambda x: bool(x > 0) - bool(x < 0)
+def between(min, x, max):
+    if x < min: return min
+    if x > max: return max
+    return x
+
+log=0
+def setLogger(lgs=0):
+    return logs.new_logger(lgs)
 
 def make_object(h):
     def get(o, s):
@@ -24,37 +65,19 @@ def make_object(h):
     return x
 
 # config stuff
-def get_config(path="config.json"):
-    with open(path) as f:
-        data = json.load(f)
-    return data
-def get_params(f, path="config.json"):
-    c = get_config(path)
-    return c["processes"][f]
-config = get_config()
+# def get_config(path="config.json"):
+#     with open(path) as f:
+#         data = json.load(f)
+#     return data
+# def get_params(f, path="config.json"):
+#     c = get_config(path)
+#     return c["processes"][f]
+# config = get_config()
 
 # handle known errors properly
 def makerr(errClass, log, msg, *oth):
     log.error(0, msg, oth)
     if config["env"] == "dev": raise errClass(msg)
-
-# sugar for arrays and dicts
-def push(arr, elt):
-    if elt: arr.append(elt)
-    return elt
-def set(h, k, v):
-    if v: h[k] = v
-    return v
-
-def update(dct, *oth):
-    for h in oth: dct.update(h or {})
-    return dct
-
-sign = lambda x: bool(x > 0) - bool(x < 0)
-def between(min, x, max):
-    if x < min: return min
-    if x > max: return max
-    return x
 
 # network addresses
 class MyAddr():
@@ -86,7 +109,7 @@ class Perf():
 
     def step(self, name=0, ref=0):
         t = curtime(); el = round(t - (ref or self.time), 2); self.time = t
-        if name == 0: return print(f"============== perf =========== {el}")
+        if name == 0: return self.debug(f"============== perf =========== {el}")
         self.steps.append({"name":name, "elapsed": el})
         self.debug(f"{el}   ========= {name}")
 

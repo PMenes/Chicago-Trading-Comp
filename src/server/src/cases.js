@@ -11,19 +11,37 @@ var Case1 = class extends Update {
     t.kcharts.map(k=> {t.assets[k] = c.case1[k]})
     // t.koptions.map(k=> {t.assets[k] = c.options[k]})
     t.upperlines = []
-    t.lowerlines = "one,pnl".split(",")
-    t.lowercharts = t.lowerlines
-    t.ok = 1
-    t.trades = 0
-    $(window).trigger('configok')
+    t.lowerlines = "price,one,pnl".split(",")
+    t.lowercharts={}
+    t.lowercharts.names = "pnl,one,K,M,N,Q,U,V".split(",")
+    t.lowercharts.cols = t.lowercharts.names.map(x=>1)
+    // t.lowercharts.names = "pnl,one".split(",")
+    t.fines = ["one"]
+    // "K" : {"flag":"May", "n":5},
+    // "M" : {"flag":"June", "n":6},
+    // "N" : {"flag":"July", "n":7},
+    // "Q" : {"flag":"August", "n":8},
+    // "U" : {"flag":"September", "n":9},
+    // "V" : {"flag":"October", "n":10}
+    super.init()
   }
   initcharts() {
     // charts["hist-IDXPHX"].domain_add = () => 0.1 // special one
+    "K,M,N,Q,U,V".split(",").map(x => charts[`hist-${x}`].domain_add = () => 0.1)
+
   }
-  beforeupperchart(k, data, sums) {
+  updatelowercharts(m, t) {
+
+    "K,M,N,Q,U,V".split(",").map(x => charts[`hist-${x}`].update(m.assets[x].status.price) )
+    //   console.log("x=", x, m.assets[x])
+    //   charts[`hist-${x}`].update(m.assets[x].status.price)
+    // })
+    "pnl,one".split(",").map(x => charts[`hist-${x}`].update(m.gpos[x]))
+  }
+  beforeupperchart(k, data, m) {
     // if(k==="IDXPHX") {var mid = this.getmid(data.market); if (mid) sums[`IDXPHX_pos-num-sum`] = mid }
   }
-  afterallcharts(sums) {
+  afterallcharts(m) {
     // this.placeUnd( sums[`IDXPHX_pos-num-sum`])
   }
 }
@@ -40,21 +58,30 @@ var Case2 = class extends Update {
     // t.allcols = ["label","sum"].concat(t.kcharts)
     t.assets = {"IDXPHX":{strike:1}}
     t.koptions.map(k=> {t.assets[k] = c.options[k]})
-    t.upperlines = "price,delta,vega,sigma,pos".split(",")
-    t.lowerlines = "delta,vega,pnl".split(",")
-    t.lowercharts = ["IDXPHX", "delta","vega","pnl"]
-    t.ok = 1
-    t.trades = 0
-    $(window).trigger('configok')
+    t.upperlines = "price,delta,vega,sigma,pos,vpos,pri".split(",")
+    t.lowerlines = "delta,vega,pnl,gamma".split(",")
+    t.lowercharts = {}
+    t.lowercharts.names = ["IDXPHX", "delta","vega","pnl"]
+    t.lowercharts.cols = [3,3,3,4]
+    t.fines = ["delta", "vega"]
+    super.init()
   }
   initcharts() {
-    charts["hist-IDXPHX"].domain_add = () => 0.1 // special one
+    charts["hist-IDXPHX"].domain_add = () => 0.05 // special one
   }
-  beforeupperchart(k, data, sums) {
-    if(k==="IDXPHX") {var mid = this.getmid(data.market); if (mid) sums[`IDXPHX_pos-num-sum`] = mid }
+  beforeupperchart(k, data, sums, h) {
+    // console.log("sums", sums)
+    // console.log("h", h)
+    if(k==="IDXPHX") sums.IDXPHX = h.price || h.mkt
+    // if(k==="IDXPHX") {var mid = this.getmid(data.market); if (mid) sums[`IDXPHX_pos-num-sum`] = mid }
+    // if(k==="IDXPHX") {var mid = this.getmid(data.market); if (mid) m.IDXPHX = mid; console.log("mid", m.IDXPHX, mid, data.market) }
+    // if(k==="IDXPHX") {m.IDXPHX = t.assets.IDXPHX.price
   }
-  afterallcharts(sums) {
-    this.placeUnd( sums[`IDXPHX_pos-num-sum`])
+  updatelowercharts(m) {
+    this.lowercharts.names.map(x => charts[`hist-${x}`].update(m.gpos[x]))
+  }
+  afterallcharts(m) {
+    this.placeUnd(this.assets.IDXPHX.price)
   }
   placeUnd(ret) {
     // place the underlying price

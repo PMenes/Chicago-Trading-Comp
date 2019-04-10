@@ -34,11 +34,10 @@ class Markets():
         o = self.orders.order_at_price(p["price"]) # orders we have at this price
         if o:
             if abs(o.h["size"]) > abs(p["size"]):
-                self.warning(f'size={p["size"]}, but we have a live order with bigger size !!', o.show())
+                self.warning(f'size={p["size"]}, but live order with bigger size !!', o.show())
                 # u.makerr( ValueError, 'but we have a live order with bigger size !!', o, p, markets)
             p["size"] -= o.h["size"] # substract our size from market size
         if p["size"] > 0: u.push(self.lst, p)
-        # print(self.name, self.sens, len(self.lst), len(self.lst) > self.max_take)
         return len(self.lst) > self.max_take - 1
 
     def sortedMktOds(self):

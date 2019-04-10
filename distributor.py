@@ -1,9 +1,10 @@
 from src.ws_http_server import WsHttpServer
 import src.utils as u
+from config import config
 
 class Distributor(WsHttpServer):
     def __init__(self):
-        self.config = c = u.get_config()
+        self.config = c = config
         self.mmset = 0
         WsHttpServer.__init__(self, c["processes"][__file__])
 

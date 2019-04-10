@@ -4,10 +4,11 @@ import re
 import os
 import time
 import src.utils as utils
+from config import config
 
 class Processor():
     def __init__(self, args):
-        self.config = c = utils.get_config(); self.a = vars(args);
+        self.config = c = config; self.a = vars(args);
         l = c["groups"].get(self.a["process"][0]) or self.a["process"]
         self.asc = []; self.desc=[]
         for k in l: self.asc.append(k); self.desc.insert(0, k)

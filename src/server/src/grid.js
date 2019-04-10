@@ -4,13 +4,14 @@ var Grid = function(container) {
   t.container = container
   t.arr = []
   t.cur = {r: 1, c:1, sr:1, sc:1, mr:1, mc:1}
-  t.cols = updater.kcharts
+  // t.cols = updater.kcharts
   return t
 }
 
 Grid.prototype = {
   constructor: Grid,
   all() { this.generate().build().fill().startCharts().formatGrid() },
+  // all() { this.generate().build()},
   box: function(n, nh) {
     var t = this
     var h = {r: nh.r || t.cur.r, c:nh.c || t.cur.c, sr:nh.sr || 1, sc:nh.sc || 1, n:n}
@@ -21,22 +22,26 @@ Grid.prototype = {
         grid-row: ${h.r} / span ${h.sr};
       }`
     t.arr.push(h)
-    var c = h.c + h.sc; t.cur.mc = c > t.cur.mc ? c : t.cur.mc
-    var r = h.r + h.sr; t.cur.mr = r > t.cur.mr ? r : t.cur.mr
+    var c = t.cur.c = h.c + h.sc; t.cur.mc = c > t.cur.mc ? c : t.cur.mc
+    var r = t.cur.r = h.r + h.sr; t.cur.mr = r > t.cur.mr ? r : t.cur.mr
+    return r
   },
   line: function(n, h={}) {
-    var t = this; nh = {r:h.r || t.cur.mr, c:h.c || 3, sr:h.sr || 1, sc:h.sc || 1};
-    var i; cols = h.cols || t.cols; nh.c -= nh.sc
-    for(i=0; i<cols.length; i++) t.box(`${n}-${cols[i]}`, {r: nh.r, c:(nh.c+=nh.sc), sr:nh.sr, sc:nh.sc, chart:h.chart})
+    var t = this; nh = {r:h.r || t.cur.r, c:h.c || t.dft.c || 1, sr:h.sr || 1, sc:h.sc || 1};
+    cols = h.cols || t.dft.cols;  nh.scs = h.scs || cols.map(x=>nh.sc); nc=nh.c
+    nh.scs.map((v,i)=> t.box(`${n}-${cols[i]}`, {r: nh.r, c:nc, sr:nh.sr, sc:v, chart:h.chart}, nc+=v))
+    return t.cur.r
   },
   build: function() {
     var t = this
-    var ur = `${Math.round(($(document).height()-t.cur.mr)/t.cur.mr*100)/100}px`
-    var uc = `${Math.round(($(document).width()-t.cur.mc)/t.cur.mc*100)/100}px`
+    // var ur = `${Math.round(($(document).height()-t.cur.mr)/t.cur.mr*100)/100}px`
+    // var uc = `${Math.round(($(document).width()-t.cur.mc)/t.cur.mc*100)/100}px`
+    var ur = `${Math.round(($(document).height())/t.cur.mr)}px`
+    var uc = `${Math.round(($(document).width())/t.cur.mc)}px`
     var css = []; var html = []
     css.push(`\n.wrapper {
   		display: grid;
-      grid-gap: 0px;
+      column-gap: 3px;
   		grid-template-columns: repeat(${t.cur.mc}, [col] ${uc} ) ;
   		grid-template-rows: repeat(${t.cur.mr}, [row] ${ur}  );
   	}`)
@@ -46,30 +51,24 @@ Grid.prototype = {
     return t
   },
   generate: function() {
-    var t = this; var r
-    t.line("title", {sr:2})
-    $.each(updater.upperlines, (i, v) => t.line(`${v}-num`))
-    r = t.cur.mr
-    t.line("chart", {r:r, sr:20, sc:1, chart:1})
-    r = t.cur.mr;
-    var keep = r
-    updater.lowerlines.map(v=> t.line(`${v}_pos-num`))
-    r = t.cur.mr
-    // t.box("hist-IDXPHX", {r:r, c:1, sr:8, sc:3, chart:1})
-    t.line("hist", {r:r, c:1, sr:6, sc:3, chart:1, cols:updater.lowercharts })
+    var t = this; var kp={}; var u = updater; ul = u.lowercharts
+    t.dft = {c:3, cols:updater.kcharts}
+    kp.r1 = t.line("title", {sr:2})
+    u.upperlines.map((v,i) => t.line(`${v}-num`) )
+    kp.r2 = t.line("chart", {sr:20, chart:1})
+    kp.r3 = u.lowerlines.map(v=> t.line(`${v}_pos-num`))
 
-    updater.lowerlines.map((v,i) => { t.box(`${v}-label`, {r: i+3, c:1, sc:2}) })
-    // "price,delta,vega,sigma,pos".split(",").map((v,i) => { t.box(`${v}-label`, {r: i+3, c:1, sc:2}) })
-    updater.lowerlines.map((v,i)=> t.line(`${v}_pos`, {r: keep+i, c:1, cols:["label", "num-sum"]}))
-    r = 9
-    "cycles,trades,info,pnl,fines".split(",").map((v,i)=>{
-      t.line(`${v}`, {r:r+i*2, sr:2, c:1, cols:["label", "num"]})
+    r = 11; "cycles,trades,volume,pnl,fines".split(",").map((v,i)=>{
+      t.line(`${v}`, {r:r+i, sr:1, c:1, cols:["label", "num"]})
     })
-    // t.box("cycles", {r: 1, c:1, sc:2, sr:2})
-    // t.box("info", {r: 9, c:1, sc:2, sr:2})
-    // t.box("pnl", {r: 11, c:1, sc:2, sr:2})
-    // t.box("fines", {r: 13, c:1, sc:2, sr:2})
+    r = 17; u.fines.map((n, x)=> {
+      ;["name"].concat(u.fine_types).map((v, i) => t.box(`${n}-${v}-num-fines`, {r: r+i, c:1+x}))
+    })
 
+    t.dft = {c:1, cols:["label", "num-sum"]}
+    u.upperlines.map((v,i) => t.line(`${v}-label`, {r: kp.r1+i, sc:2, cols:["label"]}) )
+    u.lowerlines.map((v,i)=> t.line(`${v}_pos`, {r: kp.r2+i}))
+    t.line(`hist`, {sr:6, chart:1, cols:ul.names, scs:ul.cols})
     return t
   },
   fill: function() {
@@ -85,7 +84,7 @@ Grid.prototype = {
     updater.kcharts.map(k=> {
       Charts[`chart-${k}`] = class extends Charts.Big {}
     })
-    updater.lowercharts.map(k=>{
+    updater.lowercharts.names.map(k=>{
       Charts[`hist-${k}`] = class extends Charts.Lower {}
     })
 
@@ -101,7 +100,12 @@ Grid.prototype = {
   formatGrid: function() {
     var t = this; var x
     $(".label").each((i,el)=>$(el).html(el.id.split("-")[0]+":"))
-    updater.newMsg(htcase1)
+    updater.newMsg(ht[thiscase])
+    $("#pnl-label").html("Exch. pnl:")
+    $("#fines-label").html("Exch. fines:")
+    updater.fines.map((n, x)=> {
+      $(`#${n}-name-num-fines`).html(`${n} fines`)
+    })
     return this
   }
 }

@@ -12,5 +12,5 @@ aiogrpc
 aiohttp
 uvloop
 requests
-logging
 coloredlogs
+
