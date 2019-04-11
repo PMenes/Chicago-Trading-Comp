@@ -1,13 +1,39 @@
 import time
+import os
 import json
 import asyncio
-import signal
 import socket
 import requests
 from types import SimpleNamespace as Namespace
 from functools import partial
+import importlib
+import sys
+import collections
+import copy
+import re
 
 import src.logs as logs
+
+def deep_update(d, other):
+    iscm = lambda x: isinstance(x, collections.Mapping)
+    for k, v in other.items():
+        d_v = d.get(k)
+        if iscm(v) and iscm(d_v):
+            deep_update(d_v, v)
+        else:
+            d[k] = copy.deepcopy(v) # or d[k] = v if you know what you're doing
+
+def get_config(no_args=False):
+    global config
+    from config import config
+    cf = sys.argv[1] if len(sys.argv)>1 else "configs/default.py"
+    if no_args or not os.path.exists(cf): return
+    cf = re.sub(r"\/", ".", cf).replace(".py", "")
+    upd = importlib.import_module(cf).upd
+    deep_update(config, upd)
+get_config()
+
+# print(config["processes"]["market_maker.py"])
 
 # sugar for arrays and dicts
 def push(arr, elt):

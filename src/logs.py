@@ -13,10 +13,7 @@ def new_logger(lgs=0):
 
     class MyRecord(logging.LogRecord):
         def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
-            # h = {"hasErr": None}
-            # chk = lambda x: (h.update({"hasErr": True}) if isinstance(x, BaseException) else 0) or str(x)
             nmsg = f'{prefix[0]} {" ".join(map(str, args))}'
-            # print("hasErr", h["hasErr"], args[0], isinstance(args[0], BaseException))
             logging.LogRecord.__init__(self, name, level, pathname, lineno, nmsg, None, exc_info, func, sinfo, **kwargs)
             self.filterwith = msg
 
@@ -78,6 +75,6 @@ def new_logger(lgs=0):
 
 # l=new_logger([
 #     {"typ": "console", "level": "DEBUG", "filters": "x"},
-#     {"typ": "file","level": "DEBUG", "filters": "x", "path":"tst.log"}
+#     {"typ": "file","level": "DEBUG", "filters": "x", "filename":"tst.log"}
 # ])
 # l.error("xxx", "toto")

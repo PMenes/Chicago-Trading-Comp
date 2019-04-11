@@ -1,6 +1,7 @@
 import random
 import asyncio
 import math
+import importlib
 
 import src.utils as u
 from src.trader.Trader import Trader
@@ -133,7 +134,8 @@ class TraderCycle(BaseCycle):
     """
     lessons learned when we run always joining best bid and ask (no hedging, nothing, just best bid and ask)
 
-    1- we make no money on options. we get filled small amounts, and trade little (2 option trades / cycle)
+    1- we make no money purely market-making options.
+        we get filled only small amounts, and trade little (2 option trades / cycle)
         That should not be the case. Reason is probably the slowness of the exchange.
         (orders not taken into account until sometimes 4 cycles after, no modification that I could get working)
         I could never increase the number of trades (we do not trade much more constantly bettering bid and ask)

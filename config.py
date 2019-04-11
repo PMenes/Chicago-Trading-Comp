@@ -2,8 +2,9 @@ config = {
   "env": "dev", # change to "prod" to prevent throwing
   "fast": 0, # todo
   "shared_key":"tototo", # todo
-  "rtt": 0.04, # dev only, mock round-trip time, change to 0 on real competition or real server
+  "rtt": 0, # dev only, mock round-trip time, change to 0 on real competition or real server
   "exchange":{
+    # "host": "ec2-18-188-121-233.us-east-2.compute.amazonaws.com",
     "host": "localhost",
     "port": "50052"
   },
@@ -20,6 +21,7 @@ config = {
   "groups": { # grouped launch, for "run" or "multi_starter.py"
     "case1": ["case1.par", "case_one_bot.par", "distributor.py"],
     "case2": ["case2.par", "case_two_bot.par", "distributor.py"]
+    # "case2": ["distributor.py"]
   },
   "processes": {
     "case2.par": {
@@ -42,15 +44,15 @@ config = {
         "start": "mkdir -p .logs && python __n__ > .logs/__n__.log 2>&1 &"
     },
     "market_maker.py": {
-      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "start": "python __n__ &",
       "strategy": "christian",
       "client_id": "baruch1",
       "client_pk": "mm",
       "connect_to": ["distributor.py"], # to see the startegy running on the browser
       "log": ["DEBUG", "main", "perf"], # logs you want to see on console
       "loggers":[
-          {"typ": "console", "level":"DEBUG", "filters": "main|P102PHX"},
-          {"typ": "file","level":"ERROR", "filename":".logs/market_maker.py.txt"}
+          {"typ": "console"}, # , "filters": "main|P102PHX|C98PHX", "level":"DEBUG"
+          {"typ": "file", "filename":".logs/market_maker.py.txt", "level":"DEBUG"} # , "filters": "main|P102PHX|C98PHX"
       ],
       "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
       "strategies": {
@@ -60,7 +62,7 @@ config = {
       }
     },
     "case1.py": {
-      "start": "python __n__ > .logs/__n__.log 2>&1 &",
+      "start": "python __n__ &",
       "strategy": "christian",
       "client_id": "",
       "client_pk": "",

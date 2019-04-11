@@ -69,6 +69,7 @@ class Instrument():
         x = self.orders.get(oid); ret = []
         if x: return x
         if not silent: self.error(f"Could not find order (for {msg}):", oid or "NONE")
+        if len(oid): return self.fatal(f".... and oid is known !!!:", oid or "NONE")
         if not p or not q: return x
         p = round(p, 2)
         for k,o in self.orders.items():
@@ -79,10 +80,10 @@ class Instrument():
 
     async def add_fill(self, f):
         o = f.order; oid = o.order_id
-        op = round(f.fill_price,2); oq = round(f.filled_quantity * u.sign(o.quantity))
-        self.status["pos"] += oq; self.status["cash"] -= oq*op
-        h={"price":op, "size":abs(oq), "quantity":oq, "typ": "bids" if oq>0 else "asks", "id": oid[-6:].lower()}
-        self.info(f"got filled ({oq} at {op})", h)
+        fp = round(f.fill_price,2); fq = round(f.filled_quantity * u.sign(o.quantity))
+        self.status["pos"] += fq; self.status["cash"] -= fq*fp
+        h={"price":fp, "quantity":fq, "typ": "bids" if fq>0 else "asks"} #, "size":abs(fq)
+        self.info(f"filled-{oid[-6:]} ({fq} at {fp})", h)
 
         ok = self.exist_order(oid, "fill_order", p=o.price, q=o.quantity); h["ok"] = 1 if ok else 0
         ok.fill(f) if ok else 0

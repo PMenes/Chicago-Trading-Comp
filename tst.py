@@ -13,12 +13,9 @@ def new_logger(lgs=0):
 
     class MyRecord(logging.LogRecord):
         def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
-            def chk(x):
-                if isinstance(x, BaseException): exc_info=1
-                return str(x)
-            nmsg = f'{prefix[0]} {" ".join(map(chk, args))}'
+            nmsg = f'{prefix[0]} {" ".join(map(str, args))}'
             logging.LogRecord.__init__(self, name, level, pathname, lineno, nmsg, None, exc_info, func, sinfo, **kwargs)
-            self.filterwith = 0 if exc_info else msg
+            self.filterwith = msg
 
     class MyFilter(logging.Filter):
         def __init__(self, ison=False):
@@ -46,6 +43,8 @@ def new_logger(lgs=0):
         if not typ or typ not in ["console", "file"]:
             return print(f"type not valid {o.get('typ')}", o)
         if typ == "file":
+            print(o)
+            print(o.get("filename"))
             x = logging.handlers.RotatingFileHandler(o.get("filename", "log.log"))
             x.setLevel(o.get("level",'ERROR'))
             # 'format_for_file': {'format': "%(asctime)s :: %(levelname)s :: %(funcName)s in %(filename)s (l:%(lineno)d) :: %(message)s", 'datefmt': '%Y-%m-%d %H:%M:%S'},
@@ -78,6 +77,6 @@ def new_logger(lgs=0):
 
 l=new_logger([
     {"typ": "console", "level": "DEBUG", "filters": "x"},
-    {"typ": "file","level": "DEBUG", "filters": "x", "filename":"tst.log"}
+    {"typ": "file", "level": "DEBUG", "filters": "x", "filename":"tst.log"}
 ])
-l.debug("xxx", "toto")
+l.error("xxx", "toto")

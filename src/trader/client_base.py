@@ -6,19 +6,14 @@ import time
 from exchange.protos.service_pb2 import GetExchangeUpdateRequest
 from exchange.protos.service_pb2_grpc import ExchangeServiceStub
 import src.utils as u
-from config import config
 
 class BaseExchangeGrpcClient():
     def __init__(self, file):
-        self.c = c = config; self.p = p = c["processes"][file]
+        self.c = c = u.config; self.p = p = c["processes"][file]
 
         u.delfile(f'.logs/{file}.txt')
         self.logger = u.log = u.setLogger(p.get("loggers")).classFilter(self, "main")
-        # #  file=u.delfile(f'.logs/{file}.txt'))
-        # l.classFilter(self, "main").setLevel('DEBUG','DEBUG').setFilter(0,0)
-        # if p.get("log"):
-        #     l.setLevel(p["log"][0], 'DEBUG') # file logger takes everything
-        #     for k in p["log"][1:]: l.accept(k)
+        self.error(p.get("loggers"))
 
         h = c["exchange"]; channel = insecure_channel('%s:%s' % (h["host"], h["port"]))
         self._stub = ExchangeServiceStub(channel)
