@@ -17,13 +17,8 @@ class Instrument():
         self.mid = {"num":0,"price":0}
         self.histo = []
 
-        # greeks = "price,gamma,vega,sigma"
         self.status = u.update({"name":name}, self.status0)
-        # for k in f"pos,cash,pnl,{greeks}".split(","): self.status[k] = 0
         self.greeks = ["price","delta","gamma","vega","sigma"]
-        # if not Instrument.status0:
-        #     Instrument.status0 = h = u.update({}, self.status); del h["name"]
-        #     for k in h.keys(): h[k] = 0
 
     def best_price(self, sens):
         return self.mbids.best_price() if sens == 1 else self.masks.best_price()
@@ -45,7 +40,7 @@ class Instrument():
             self.error("??????????????", self.name, self.mid)
             u.makerr( NotImplementedError, self.logger,"mid price")
 
-    def mid_price(self):
+    def mid_price(self): # not used
         if self.mid["num"] == self.master.num: return self.mid["price"] # do not recalc multiple times
         exist = lambda cls: 0 if len(cls.lst)==0 else cls.lst[0]
         bid = exist(self.mbids); ask = exist(self.masks)
@@ -89,20 +84,6 @@ class Instrument():
         ok.fill(f) if ok else 0
         return [h, f]
 
-
-    # def clean_dirty_fills(self, f):
-    #     t = self; m = t.master
-    #     o = f.order; oid = o.order_id; q = o.quantity
-    #     k = f'{t.name}_{round(o.price,2) or 0}_{o.quantity}' # same as kwo in SingleOrder class
-    #     self.warning("dirty fill, oid=", oid or "NONE", k, f'\nf: {f}')
-    #     # try to find it anyway in bastardized workaround
-    #     if not t.wo.get(k): return t.error("could not find {oid} ({k}) in work-around")
-    #     ok = t.orders.get(t.wo[k]["oid"])
-    #     if not ok: return t.error("could not find {oid} in self.orders")
-    #     t.info("=======recovered order=============:", ok.oid)
-    #     ok.fill(f)
-
-
     async def place_order(self, h):
         # if self.name != "C98PHX": return
         return await self.obids.place_order(h) or await self.oasks.place_order(h)
@@ -115,7 +96,7 @@ class Instrument():
         ok = self.exist_order(oid, "cancel_order")
         return ok if not ok else await ok.cancel_order()
 
-    def clean_cancelled(self, num):
+    def clean_cancelled(self, num): # we clean after one cycle (too short, it could take 20 !!)
         a = self.to_clean.copy()
         for oid in a:
             o = self.orders.get(oid)

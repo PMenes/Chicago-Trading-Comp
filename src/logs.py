@@ -4,6 +4,25 @@ import re
 from functools import partial
 import src.utils as u
 
+def print_logger(lgs=0):
+    l = logging.getLogger()
+    prefix = [""];
+    l.setPrefix = lambda x: prefix.remove(prefix[0]) or prefix.append(x)
+    class MyRecord(logging.LogRecord):
+        def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
+            nmsg = f'{prefix[0]} {" ".join(map(str, args))}'
+            logging.LogRecord.__init__(self, name, 90, pathname, lineno, nmsg, None, exc_info, func, sinfo, **kwargs)
+    def setPartials(obj, name=0):
+        for k in "debug,info,warning,error,fatal,critical".split(","): setattr(obj, k, partial(getattr(l, k), 0))
+        name = name or getattr(obj, "logname")
+        obj.logger = l; obj.logname = name; return l
+    l.ok = lambda s: 1
+    l.thisClassLogger = l.classFilter = setPartials
+    logging.setLogRecordFactory(MyRecord)
+    l.setLevel("DEBUG")
+    return l
+
+
 def new_logger(lgs=0):
     lgs = lgs or [{"typ":"console"},{"typ":"file"}]
     l = logging.getLogger()
@@ -13,6 +32,9 @@ def new_logger(lgs=0):
 
     class MyRecord(logging.LogRecord):
         def __init__(self, name, level, pathname, lineno, msg, args, exc_info, func=None, sinfo=None, **kwargs):
+            noErr = 1
+            # for m in args: noErr *= 0 if isinstance(m, BaseException) else 1
+            if noErr ==0: print(args); raise(ValueError("err"))
             nmsg = f'{prefix[0]} {" ".join(map(str, args))}'
             logging.LogRecord.__init__(self, name, level, pathname, lineno, nmsg, None, exc_info, func, sinfo, **kwargs)
             self.filterwith = msg
@@ -45,7 +67,6 @@ def new_logger(lgs=0):
         if typ == "file":
             x = logging.handlers.RotatingFileHandler(o.get("filename", "log.log"))
             x.setLevel(o.get("level",'ERROR'))
-            # 'format_for_file': {'format': "%(asctime)s :: %(levelname)s :: %(funcName)s in %(filename)s (l:%(lineno)d) :: %(message)s", 'datefmt': '%Y-%m-%d %H:%M:%S'},
             f = logging.Formatter("%(asctime)s :: %(levelname)s :: %(filename)s %(lineno)d :: %(message)s",datefmt='%Y-%m-%d %H:%M:%S')
             x.setFormatter(o.get("formatter", f))
             x.maxBytes = o.get("maxBytes", 10240000)

@@ -33,8 +33,6 @@ def get_config(no_args=False):
     deep_update(config, upd)
 get_config()
 
-# print(config["processes"]["market_maker.py"])
-
 # sugar for arrays and dicts
 def push(arr, elt):
     if elt: arr.append(elt)
@@ -76,7 +74,8 @@ def between(min, x, max):
 
 log=0
 def setLogger(lgs=0):
-    return logs.new_logger(lgs)
+    # return logs.new_logger(lgs)
+    return logs.print_logger(lgs)
 
 def make_object(h):
     def get(o, s):

@@ -3,7 +3,6 @@ var tNow = () => (new Date()).getTime()
 var elapsed = (label) => console.log("==========", tNow() - startTime, label)
 var thiscase = location.hash.replace(/^#/, "").toLowerCase()
 console.log("thiscase", thiscase)
-// var Case2 = Update
 var Case = {case1: Case1, case2: Case2}
 var updater = new Case[thiscase]()
 window.addEventListener("load", function(event) {

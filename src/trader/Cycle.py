@@ -35,6 +35,7 @@ class BaseCycle():
         t = self; m = t.master
         m.num = t.num; t.perf.reset(t.num) # keep track of time and performance.
         t.logger.setPrefix(format(t.num, "05d")) # logger prefix = new num
+        self.debug(f"================== {t.num} =====================")
 
         await t.init_cycle() # all reset, user specific init
 
@@ -64,7 +65,7 @@ class BaseCycle():
             a.set_mid(x.mid_market_price) # set mid price
             await t.onMarketChange(a) # trigger onMarketChange
         t.perf.step("market")
-        self.error("IDX#PHX", t.assets["IDX#PHX"].mid.get("price"))
+
         if not t.assets["IDX#PHX"].mid.get("price") > 80: return # if no underlying price, wait
 
         # here we check if chock BEFORE RECALCULATING OPTIONS (which is 5 ms)
@@ -117,11 +118,6 @@ class BaseCycle():
 
         for k,v in t.assets.items(): v.clean_cancelled(t.num) # cleaning cancelled orders
 
-        # if len(t.fills_to_clean): self.warning("cleaning fills_to_clean", t.fills_to_clean)
-        # for f in t.fills_to_clean:
-        #     self.warning("cleaning fills_to_clean", t.assets[f.order.asset_code].wo)
-        #     t.assets[f.order.asset_code].clean_dirty_fills(f) # clean dirty fills
-
         t.perf.step("clean")
 
         await t.distribute() # send status to distributor (for web)
@@ -164,22 +160,6 @@ class BaseCycle():
 
     async def onMarketChange(self, asset):
         return
-
-
-
-    async def execute_trades11(self):
-        t = self; m = t.master
-        tasks = []; i=0
-        async def wtsk(x, i):
-            # await asyncio.sleep(0.01 * i)
-            await x.pop(0)(*x)
-        for x in t.trades_to_execute:
-            await wtsk(x, i)
-            # tasks.append(asyncio.create_task(wtsk(x, i))); i += 1
-        # for tsk in tasks:
-        #     await tsk
-        t.perf.step("traded")
-
 
     async def execute_trades(self):
         t = self; m = t.master

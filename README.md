@@ -24,7 +24,7 @@
 
     If everything went well, you should see the random strategy running.
 
-- for case 1 (not optimized yet):
+- for case 1 (not working yet):
     - - `run case1 && sleep 3 && python case1.py`
     - in your browser (firefox), open http://localhost:5046/#case1
 

@@ -25,10 +25,7 @@ class Option(Instrument):
         return self.status
 
     def all_set(self, h):
-        # errs=[]; b = {"F":0,"sigma":0,"price":0};
-        # b.update(h); b.update(self.opt)
         errs=[]; b = u.update( {"F":0,"sigma":0,"price":0}, h, self.opt)
-        # print(b)
         for k in ["F"]: errs.append(f'missing {k}') if b[k] == 0 else 0
         e = 'need either sigma or price, both are missing'
         errs.append(e) if not b.get("sigma", 0) and not b.get("price", 0) else 0
@@ -36,7 +33,6 @@ class Option(Instrument):
         if not len(errs): return b
         for e in errs: print(f'err: {e}')
         return 0
-        # raise NotImplementedError("Missing parameters, see above")
 
     def calc_all(self, b):
         h = self.all_set(b)

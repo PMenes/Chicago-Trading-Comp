@@ -4,14 +4,12 @@ var Grid = function(container) {
   t.container = container
   t.arr = []
   t.cur = {r: 1, c:1, sr:1, sc:1, mr:1, mc:1}
-  // t.cols = updater.kcharts
   return t
 }
 
 Grid.prototype = {
   constructor: Grid,
   all() { this.generate().build().fill().startCharts().formatGrid() },
-  // all() { this.generate().build()},
   box: function(n, nh) {
     var t = this
     var h = {r: nh.r || t.cur.r, c:nh.c || t.cur.c, sr:nh.sr || 1, sc:nh.sc || 1, n:n}
@@ -34,8 +32,6 @@ Grid.prototype = {
   },
   build: function() {
     var t = this
-    // var ur = `${Math.round(($(document).height()-t.cur.mr)/t.cur.mr*100)/100}px`
-    // var uc = `${Math.round(($(document).width()-t.cur.mc)/t.cur.mc*100)/100}px`
     var ur = `${Math.round(($(document).height())/t.cur.mr)}px`
     var uc = `${Math.round(($(document).width())/t.cur.mc)}px`
     var css = []; var html = []

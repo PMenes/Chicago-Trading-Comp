@@ -37,21 +37,6 @@ class Markets():
         if o:
             if abs(o.h["size"]) > abs(p["size"]):
                 self.warning(f'size={p["size"]}, but live order with bigger size !!', o.show())
-                # u.makerr( ValueError, 'but we have a live order with bigger size !!', o, p, markets)
             p["size"] -= o.h["size"] # substract our size from market size
         if p["size"] > 0: u.push(self.lst, p)
         return len(self.lst) > self.max_take - 1
-
-    def sortedMktOds(self):
-        # self.warning("orders:", self.orders.lst)
-        a = self.lst + [i for i in self.orders.lst if not i.cancelled]
-        # [i.h for i in self.lst if i.h["quantity"] != 0 and not i.cancelled]
-        a.sort(key=lambda o: o.h["price"] if type(o) == SingleOrder else o["price"], reverse=self.sens>0)
-        x = u.make_object('{}')
-        im = 0; io = 0
-        for i in a:
-            if type(i) == SingleOrder:
-                x.set(f'o{io}', i); io += 1
-            else:
-                x.set(f'm{im}', i); im += 1
-        return x

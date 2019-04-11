@@ -2,7 +2,7 @@ config = {
   "env": "dev", # change to "prod" to prevent throwing
   "fast": 0, # todo
   "shared_key":"tototo", # todo
-  "rtt": 0, # dev only, mock round-trip time, change to 0 on real competition or real server
+  "rtt": 0.04, # dev only, mock round-trip time, change to 0 on real competition or real server
   "exchange":{
     # "host": "ec2-18-188-121-233.us-east-2.compute.amazonaws.com",
     "host": "localhost",
@@ -49,16 +49,15 @@ config = {
       "client_id": "baruch1",
       "client_pk": "mm",
       "connect_to": ["distributor.py"], # to see the startegy running on the browser
-      "log": ["DEBUG", "main", "perf"], # logs you want to see on console
       "loggers":[
-          {"typ": "console"}, # , "filters": "main|P102PHX|C98PHX", "level":"DEBUG"
-          {"typ": "file", "filename":".logs/market_maker.py.txt", "level":"DEBUG"} # , "filters": "main|P102PHX|C98PHX"
+          {"typ": "console", "filters": "main|P102PHX|C98PHX", "level":"DEBUG"}
+          ,{"typ": "file", "filename":".logs/market_maker.py.txt", "level":"DEBUG", "filters": "main|P102PHX|C98PHX"}
       ],
       "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 }, # default strategy
         "paul": { "bound": 5 },
-        "christian": { "quantity": 15 }
+        "christian": { "quantity": 6 }
       }
     },
     "case1.py": {
@@ -66,11 +65,6 @@ config = {
       "strategy": "christian",
       "client_id": "",
       "client_pk": "",
-      "log": ["DEBUG", "main"],
-      "loggers": [
-          {"typ": "console", "level": "DEBUG", "filters": "main|C99PHX"},
-          {"typ": "file","level": "ERROR", "path":".logs/case1.py.txt"}
-      ],
       "connect_to": ["distributor.py"],
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },

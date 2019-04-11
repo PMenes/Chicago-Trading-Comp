@@ -23,8 +23,7 @@ var Update = class {
   newMsg(m) {
     var t = this
     while (!t.ok) return setTimeout(t.newMsg.bind(t,m), 10)
-    // this.i++; if(this.i>15) return
-    // console.log(m);
+    // this.i++; console.log(m); if(this.i>15) return
     console.log(`================== ${m.cycles} ==============================`)
     startTime = tNow()
     "cycles,trades,volume,pnl,fines".split(",").map(x=>t.chgNum(`#${x}-num`, m.meta[x]))

@@ -32,8 +32,6 @@ var Chart = class {
     var t = this
     var deft = {
       name:`c${nanoid(9)}`
-      // , dWidth: t.container.attr("width")
-      // , dHeight: t.container.attr("height")
       , dWidth: t.obj.width() || t.container.attr("width")
       , dHeight: -t.titleHeight + t.obj.height() || t.container.attr("height")
       , margin: {top: 0, right: 1, bottom: 20, left: 1}
@@ -45,9 +43,6 @@ var Chart = class {
 
     // Define the div for the tooltip
     t.div = d3.select("body").select("div.tooltip")
-    // t.div = d3.select("body").append("div")
-    //     .attr("class", "tooltip")
-    //     .style("opacity", 0);
 
     t.svg = t.container.append("svg")
         .attr("width", t.width + t.margin.left + t.margin.right)
@@ -81,7 +76,6 @@ var Chart = class {
         .attr("class", `${t.name} axes xaxis`)
         .attr("stroke-dasharray", "8, 0")
         .attr("transform", "translate(0," + t.height + ")")
-        // .call(d3.axisBottom(t.xScale)); // Create an axis component with d3.axisBottom
         .call(x); // Create an axis component with d3.axisBottom
     return t
   }
@@ -111,7 +105,6 @@ var Chart = class {
     Object.keys(prms).concat(Object.keys(t.dft)).map((k, h) => {
        h = t.notattrs[k] ? opt : opt.attrs; h[k] = prms[k] || t.dft[k]
     })
-    // console.log("opt=",opt)
     opt.attrs.class = `${t.name} datall ${typ} ${cls} ${prms.class || ''}`.trim()
     return cls
   }
@@ -121,8 +114,6 @@ var Chart = class {
     var cls = t.optDefault(opt, prms, "line")
 
     var line = d3.line()
-        // .x((d,i) => { var g = t.xScale(opt.getx(d, i)); console.log("x",g, opt.getx(d, i)); return g})
-        // .y((d,i) => { var g = t.yScale(opt.gety(d, i)); console.log("y",g, opt.gety(d, i)); return g})
         .x((d, i) => t.xScale(opt.getx(d, i))) // set the x values for the line generator
         .y((d, i) => t.yScale(opt.gety(d, i))) // set the y values for the line generator
         .curve(d3.curveMonotoneX) // apply smoothing to the line
@@ -147,9 +138,6 @@ var Chart = class {
       var x = t.svg.selectAll(`.${cls}`)
           .data(dataset)
           .enter().append("circle") // Uses the enter().append() method
-          // .attr("cx", (d,i) => { var g = t.xScale(opt.getx(d, i)); console.log("cx",g, opt.getx(d, i)); return g})
-          // .attr("cy", (d,i) => { var g = t.yScale(opt.gety(d, i)); console.log("cy",g, opt.gety(d, i)); return g})
-          // .attr("r", (d,i) => { var g = opt.radius(d,i); console.log("r",g, opt.radius(d,i)); return g})
           .attr("cx", (d,i) => t.xScale(opt.getx(d,i)))
           .attr("cy", (d,i) => t.yScale(opt.gety(d,i)))
           .attr("r", (d,i) => opt.radius(d,i))
@@ -182,5 +170,4 @@ var Chart = class {
     this.svg.selectAll(sel).remove()
     return this
   }
-
 }

@@ -20,13 +20,15 @@ class Orders():
         self.debug(self.modify_func)
 
     def order(self, ccy, p=0, q=0, add=0, lm="L"):
-        p = round((p or self.asset.best_price(self.sens)) + add, 2)
+        t = self; m = t.master
+        p = round((p or t.asset.best_price(t.sens)) + add, 2)
+        nq = abs(m.sp.get("quantity") or 0) or 10
         if not q: return p
-        allorders = self.get_live()
+        allorders = t.get_live(); q = t.sens*abs(q)
         x = exist = allorders[0] if len(allorders) else 0 # will modify the first order if it exists
-        o = {"price": p, "quantity": self.sens*abs(q), "order_type": lm}
-        exc = lambda: [x.modify_order, o] if exist else [self.place_order, o]
-        if x and abs(x.h["price"] - o["price"])<0.03 and abs(x.h["qleft"]>4): return p # nothing to do
+        o = {"price": p, "quantity": q, "order_type": lm, "name": t.name}
+        exc = lambda: [x.modify_order, o] if exist else [t.place_order, o]
+        if x and abs(x.h["price"] - o["price"])<0.02 and abs(q-x.h["qleft"])<abs(q/3): return p # nothing to do
         ccy.trades_to_execute.append(exc())
         return p
 
@@ -51,7 +53,7 @@ class Orders():
 
     def get_live(self):
         # self.warning(self.lst)
-        return [i for i in self.lst if self.cond(i)]
+        return [i for i in self.lst if self.cond(i) and not i.ishedge]
 
 
 class SingleOrder():
@@ -62,14 +64,12 @@ class SingleOrder():
         self.cancelled = 0
         self.quantity = 0
         self.filled = 0
+        self.ishedge = 0
         self.aorders = all.aorders
-        # self.awo = all.awo
         self.modified = ""
-        # self.kwo = lambda: f'{self.all.name}_{self.h["price"] or 0}_{self.h["quantity"]}'
         self.modify_order = getattr(self, all.modify_func)
 
-
-    def show(self, h={}):
+    def show(self, h={}): # just print for logs
         if not self.oklog: return "nothing" # we don't want to spend cpu time on json.dumps for nothing
         s = u.update({"p": self.h["price"], "q": self.h["quantity"], "r": self.h["qleft"]}, h)
         return f'{self.all.name}: {json.dumps(s)}'
@@ -90,12 +90,12 @@ class SingleOrder():
         self.h["size"] -= f.filled_quantity
         if self.h["size"] <= 0: self.mark_cancelled()
         self.debug(f"filled-{self.sid}", self.show())
-        # self.info("filled ", self.show({"this_fill": oq, "total_filled": self.filled}))
         return self
 
     def make_order(self, h):
         h["quantity"] = int(round(h["quantity"], 0))
         h["qleft"] = h["quantity"]
+        self.ishedge = h.get("ishedge")
         h["size"] = abs(h["quantity"])
         h["price"] = round(h["price"], 2) if h["price"] else None
         h["num"] = self.all.master.num
@@ -110,7 +110,6 @@ class SingleOrder():
                  order_type = h["order_type"], competitor_identifier = self.all.master._comp_id)
 
     async def create(self, h):
-        # if self.all.name != "C100PHX": return
         if self.all.sens * h["quantity"] <= 0: return None # quantity and sens must be the same
         o = self.make_order(h)
         resp = await self.all.master.place_order(o)
@@ -119,12 +118,10 @@ class SingleOrder():
         self.created = h["created"] = h["num"]; self.filled = 0; self.h = h
         self.oid = h["order_id"] = resp.order_id; self.sid = self.oid[-6:].lower()
         self.aorders[self.oid] = self # keep a reference in orders
-        # self.awo[self.kwo()] = {"oid":self.oid, "num":self.created}
         self.debug(f"created-{self.sid}", self.show())
         return self
 
     async def real_modify_order(self, h):
-        # self.warning("REAL_modify..", self.show(h))
         if self.all.sens * h["quantity"] <= 0: return None # quantity and sens must be the same
         temp = u.update({}, self.h, {"modified": self.all.master.num}, h)
         o = self.make_order(temp)
@@ -132,17 +129,18 @@ class SingleOrder():
         if type(resp) != ModifyOrderResponse:
             return self.error("Could NOT modify_order", self.sid, f'(created:{self.created}, last modif:{self.modified})', temp, resp)
         self.h = temp; self.modified = self.h["modified"]
-        # self.awo[self.kwo()] = {"oid":self.oid, "num":self.modified}
         self.debug(f"modified-{self.sid}", self.show())
         return self
 
     async def mock_modify_order(self, h):
         self.debug(f"mock_modify-{self.sid}", self.show(h))
-        t1 = asyncio.create_task( self.cancel_order() )
-        t2 = asyncio.create_task( self.all.place_order(h) )
-        await t1
-        if not t1.result(): return
-        await t2; return t2.result()
+        # t1 = asyncio.create_task( self.cancel_order() )
+        # t2 = asyncio.create_task( self.all.place_order(h) )
+        # await t1
+        # if not t1.result(): return
+        # await t2; return t2.result()
+        x1 = await self.cancel_order()
+        return await self.all.place_order(h) if x1 else x1
 
     async def cancel_order(self):
         if self.cancelled: return
@@ -154,7 +152,6 @@ class SingleOrder():
 
     def mark_cancelled(self):
         self.all.asset.to_clean.append(self.oid)
-        # self.awo.pop(self.kwo(), 0)
         self.cancelled = self.all.master.num;  return self
 
     def delete(self):
