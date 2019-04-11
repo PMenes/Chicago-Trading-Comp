@@ -52,7 +52,7 @@ We hope that at least the queue respects the order in which the orders were rece
 
 We hope the issues outlined above are not due to our code. If they are, shame on us! (and please let us know...)
 
-In any case, I heard that execution engines are notoriously hard to get right, especially when they need to cope with high bursts of volume.
+I heard that execution engines are notoriously hard to get right, especially when they need to cope with high bursts of volume.
 
 In this case, I would have structured the exchange with one AWS lamba per competitor (which is cheap and would calculate competitor limits, pnl and fines) in order to keep the core matching engine "clean" and reasonably fast. It should be possible with 40 competitors, even using python.
 
