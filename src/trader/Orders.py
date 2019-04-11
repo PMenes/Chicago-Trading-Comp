@@ -134,13 +134,13 @@ class SingleOrder():
 
     async def mock_modify_order(self, h):
         self.debug(f"mock_modify-{self.sid}", self.show(h))
-        # t1 = asyncio.create_task( self.cancel_order() )
-        # t2 = asyncio.create_task( self.all.place_order(h) )
-        # await t1
-        # if not t1.result(): return
-        # await t2; return t2.result()
-        x1 = await self.cancel_order()
-        return await self.all.place_order(h) if x1 else x1
+        t1 = asyncio.create_task( self.cancel_order() )
+        t2 = asyncio.create_task( self.all.place_order(h) )
+        await t1
+        if not t1.result(): return
+        await t2; return t2.result()
+        # x1 = await self.cancel_order()
+        # return await self.all.place_order(h) if x1 else x1
 
     async def cancel_order(self):
         if self.cancelled: return

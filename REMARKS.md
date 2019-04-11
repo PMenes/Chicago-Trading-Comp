@@ -43,6 +43,8 @@ We have noticed delays of more that 20 cycles.<br/><br/>
 
 This may suggests (not sure) a sometimes very slow queue, which is worrying because locally we are only one. With 40 competitors the problem might be compounded and unmanageable.
 
+Note that this costs each competitor a lot of money, since when you get executed on an old trade, it is because it went against you.
+
 We hope that at least the queue respects the order in which the orders were received, because we spent a lot of time trying to speed up the process on our end.
 
 

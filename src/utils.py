@@ -74,8 +74,8 @@ def between(min, x, max):
 
 log=0
 def setLogger(lgs=0):
-    # return logs.new_logger(lgs)
-    return logs.print_logger(lgs)
+    return logs.new_logger(lgs)
+    # return logs.print_logger(lgs)
 
 def make_object(h):
     def get(o, s):

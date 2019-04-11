@@ -2,7 +2,7 @@ config = {
   "env": "dev", # change to "prod" to prevent throwing
   "fast": 0, # todo
   "shared_key":"tototo", # todo
-  "rtt": 0.04, # dev only, mock round-trip time, change to 0 on real competition or real server
+  "rtt": 0, # dev only, mock round-trip time, change to 0 on real competition or real server
   "exchange":{
     # "host": "ec2-18-188-121-233.us-east-2.compute.amazonaws.com",
     "host": "localhost",
