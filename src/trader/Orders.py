@@ -26,7 +26,7 @@ class Orders():
         x = exist = allorders[0] if len(allorders) else 0 # will modify the first order if it exists
         o = {"price": p, "quantity": self.sens*abs(q), "order_type": lm}
         exc = lambda: [x.modify_order, o] if exist else [self.place_order, o]
-        if x and abs(x.h["price"] - o["price"])<0.02: return p # nothing to do
+        if x and abs(x.h["price"] - o["price"])<0.03 and abs(x.h["qleft"]>4): return p # nothing to do
         ccy.trades_to_execute.append(exc())
         return p
 

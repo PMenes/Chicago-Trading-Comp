@@ -11,11 +11,13 @@ class Markets():
         self.max_take = 3
         self.lst = []
         self.best = 0
+        self.oppo=0
 
     def best_price(self):
         return self.best
 
     def update(self, markets):
+        self.oppo = self.oppo or self.orders.asset.masks if self.sens>0 else self.orders.asset.mbids
         pprice = 0; p = 0; self.lst = []
         for h in markets:
             np = round(h.price,2)

@@ -19,21 +19,19 @@
     so that you can use the shortcut 'run' (instead of 'python multi_starter.py')
 
 - ..then, for case 2:
-    - `run case2`
-    - `python market_maker.py`
+    - `run case2 && sleep 3 && python market_maker.py`
     - in your browser (firefox), open http://localhost:5046/#case2
 
     If everything went well, you should see the random strategy running.
 
 - for case 1 (not optimized yet):
-    - `run case1`
-    - `python case1.py`
+    - - `run case1 && sleep 3 && python case1.py`
     - in your browser (firefox), open http://localhost:5046/#case1
 
     Note: case1 takes some time to start (like 30 seconds). Be patient !
 
 
-- To stop: `run caseX -stop` (X being 1 or 2)
+- To stop: Ctrl-c and `run caseX -stop` (X being 1 or 2)
 
 ### changing strategies
 

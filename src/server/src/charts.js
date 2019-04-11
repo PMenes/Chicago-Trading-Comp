@@ -44,7 +44,7 @@ Charts.Lower = class extends Chart {
   update(p) {
     var t = this; var changed = 0; t.cycles++
     var redo = ()=>{
-      t.bids = 100000000; t.asks = -100000000
+      t.bids = p; t.asks = p
       t.hist.map(i => { t.bids = i < t.bids ? i : t.bids; t.asks = i > t.asks ? i : t.asks })
       changed = 1; var add = t.domain_add(p); t.bids = round(t.bids,2,-add); t.asks = round(t.asks,2,add)
     }

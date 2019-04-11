@@ -167,6 +167,7 @@ class TraderCycle(BaseCycle):
 
     async def christian(self, q=0): # this is stupid random trades.
         t=self; m = t.master
+        if t.num < 25: return
         # parameters
         tps = target_pos = 7
         lbk = lookback = 10 # number of cycles to look back for price up/down determination
@@ -207,8 +208,8 @@ class TraderCycle(BaseCycle):
         if abs(to_hedge)>m.c["limits"]["delta"]: # if we will be over limits delta, hedge it
             t.warning("over delta:", "vega=",round(pos["vega"]), "delta=",round(th))
             h = {"name":a.name, "price": None, "quantity": round( -th, 0), "order_type": "M"}
-            # a.obids.cancel_all(t); a.oasks.cancel_all(t);
-            # cls = a.obids if th<0 else a.oasks; cls.order(t, q=th)
+            a.obids.cancel_all(t); a.oasks.cancel_all(t);
+            cls = a.mbids if th<0 else a.masks; cls.orders.order(t, q=th, p=cls.oppo.best)
 
 
 if __name__ == "__main__":

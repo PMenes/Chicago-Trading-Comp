@@ -13,7 +13,6 @@ class BaseExchangeGrpcClient():
 
         u.delfile(f'.logs/{file}.txt')
         self.logger = u.log = u.setLogger(p.get("loggers")).classFilter(self, "main")
-        self.error(p.get("loggers"))
 
         h = c["exchange"]; channel = insecure_channel('%s:%s' % (h["host"], h["port"]))
         self._stub = ExchangeServiceStub(channel)
