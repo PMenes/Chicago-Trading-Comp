@@ -97,14 +97,16 @@ class SingleOrder():
         h["qleft"] = h["quantity"]
         self.ishedge = h.get("ishedge")
         h["size"] = abs(h["quantity"])
-        h["price"] = round(h["price"], 2) if h["price"] else None
-        h["num"] = self.all.master.num
+
         default_ot = Order.ORDER_LMT; ot = h.get("order_type", 0)
         if ot == "M": ot = Order.ORDER_MKT
         if ot == "L": ot = Order.ORDER_LMT # =2
         h["order_type"] = default_ot if ot != Order.ORDER_MKT and ot != Order.ORDER_LMT else ot
         # self.error("make order", f'{h}')
         if ot == Order.ORDER_MKT: h["price"] = None
+
+        if ot != Order.ORDER_MKT: h["price"] = round(h["price"], 2) if h["price"] else None
+        h["num"] = self.all.master.num
         if not h.get("alert", 0): h["alert"] = 0
         return Order(asset_code = self.all.name, quantity=h["quantity"], price = h["price"],
                  order_type = h["order_type"], competitor_identifier = self.all.master._comp_id)

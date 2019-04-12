@@ -1,3 +1,5 @@
+import logging
+
 config = {
   "env": "dev", # change to "prod" to prevent throwing
   "fast": 0, # todo
@@ -69,7 +71,25 @@ config = {
       "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
       "loggers1":[
           {"typ": "console", "filters": "main|orders|cycle", "level":"DEBUG"}
-          ,{"typ": "file", "filename":".logs/market_maker.py.txt", "level":"DEBUG", "filters": "main|orders|cycle"}
+          ,{"typ": "file", "filename":".logs/case1.py.txt", "level":"DEBUG", "filters": "main|orders|cycle"}
+      ],
+      "strategies": {
+        "random": { "better": 0.01, "quantity": 1 },
+        "paul": { "bound": 5 },
+        "christian": { "quantity": 10, "better":0 }
+      }
+    },
+    "case1-ma.py": {
+      "start": "python __n__ &",
+      "strategy": "christian",
+      "client_id": "",
+      "client_pk": "",
+      "connect_to": ["distributor.py"],
+      "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
+      "loggers":[
+          {"typ": "console", "filters": "main|orders|cycle", "level":"DEBUG"}
+          ,{"typ": "file", "filename":".logs/case1-ma.py.txt", "level":"DEBUG", "filters": "main|orders|cycle"}
+          ,{"typ": "file", "filename":".logs/mas.txt", "formatter":logging.Formatter("%(message)s"), "level":"DEBUG", "filters": "cycle_ma"}
       ],
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },

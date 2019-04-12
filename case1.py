@@ -52,7 +52,7 @@ class TraderCycle(BaseCycle):
     def makeo(self, q, a):
         t = self; m = t.master
         cls = a.mbids if q>0 else a.masks
-        h = {"price": cls.oppo.best, "quantity": q, "ishedge":1}
+        h = {"order_type": "M", "quantity": q, "ishedge":1}
         t.trades_to_execute.append([cls.orders.place_order, h])
 
     async def christian(self): # this is stupid random trades.

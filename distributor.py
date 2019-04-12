@@ -1,3 +1,4 @@
+import json
 from src.ws_http_server import WsHttpServer
 import src.utils as u
 
@@ -24,7 +25,8 @@ class Distributor(WsHttpServer):
             if self.mmset: return self.ws_close(ws, "too many mms!") # only one mm !!
             self.mmset = 1
         if wis[:6] == "client":
-            await ws.send_json({"action": "init", "data": self.config})
+            x = json.dumps({"action": "init", "data": self.config}, default=lambda o: '<not serializable>')
+            await ws.send_str(x)
         print(f"connection is: {wis}")
 
     async def distribute_message(self, wis, m):
