@@ -66,7 +66,8 @@ class BaseCycle():
             await t.onMarketChange(a) # trigger onMarketChange
         t.perf.step("market")
 
-        if not t.assets["IDX#PHX"].mid.get("price") > 80: return # if no underlying price, wait
+        und = t.assets.get("IDX#PHX")
+        if und and not und.mid.get("price") > 80: return # if no underlying price, wait
 
         # here we check if chock BEFORE RECALCULATING OPTIONS (which is 5 ms)
         await t.maybe_chock(market="updated")

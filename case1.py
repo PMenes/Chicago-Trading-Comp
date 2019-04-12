@@ -17,8 +17,10 @@ class MarketMaker(Trader):
 
         c = self.c #init assets (=options or instruments)
         self.assets = {}
-        self.assets[c["underlying"]] = Instrument(c["underlying"], self)
-        for k,v in c["options"].items(): self.assets[k] = Option(k, self, v)
+        for k,v in c["case1"].items(): self.assets[k] = Instrument(k, self, v) #changed instrument to option
+        # self.assets = {}
+        # self.assets[c["underlying"]] = Instrument(c["underlying"], self)
+        # for k,v in c["options"].items(): self.assets[k] = Option(k, self, v)
 
         self.store = {} # if you want to store something across cycles
         self.fines_detail = {"max":0, "seconds":0, "val":0}
