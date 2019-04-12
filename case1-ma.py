@@ -57,17 +57,13 @@ class TraderCycle(BaseCycle):
 
     async def christian(self): # this is stupid random trades.
         t = self; m = t.master
-        # self.pairs = {
-        #     "QU": {"mean": -0.05  , "diff": 0.1},
-        #     "NU": {"mean":  0.05  , "diff": 0.1},
-        #     "NQ": {"mean":  0.1 , "diff": 0.1},
-        #     "MV": {"mean":  -0.8 , "diff": 0.15},
-        #     "MQ": {"mean": -0.075  , "diff": 0.1},
-        #     "MN": {"mean": -0.15 , "diff": 0.15},
-        #     "KU": {"mean":  -0.95 , "diff": 0.1},
-        #     "KM": {"mean":  -0.8 , "diff": 0.1}
-        # }
-        for k,v in m.pairs.items():
+        for k1,a1 in t.assets.items()
+            if not (a1.mbids.best != 0 and a2.mbids.best != 0): continue
+            for k2,a2 in t.assets.items()
+                if not (a1.masks.best != 0 and a2.masks.best != 0): continue
+                if k1 == k2 or 
+
+
             a1 = t.assets[k[:1]]; a2=t.assets[k[-1:]]
             if not (a1.mbids.best != 0 and a2.mbids.best != 0 and a1.masks.best != 0 and a2.masks.best != 0): continue
             diff = a1.mid["price"] - a2.mid["price"]

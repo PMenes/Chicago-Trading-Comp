@@ -9,6 +9,7 @@ class Instrument():
         self.logger = master.logger.thisClassLogger(self)
         x = opt.get("spread", 0); self.spread = x if x else 0.6
         self.name = name; self.master = master
+        self.infos = opt
         self.orders = {}; self.wo = {}
 
         self.obids = Orders(1, name, self); self.oasks = Orders(-1, name, self)

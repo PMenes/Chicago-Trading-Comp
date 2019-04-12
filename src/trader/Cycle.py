@@ -133,15 +133,6 @@ class BaseCycle():
     # =====================================================================
     # =====================================================================
 
-    async def allspreads(self, q=0): # this is stupid random trades.
-        t=self; m = t.master
-        q = abs(q) or m.sp["quantity"] or 10
-        repo = []
-        for k,a in t.assets.items(): # place new orders
-            u.push(repo, m.best_order(a,  q, better=0))
-            u.push(repo, m.best_order(a, -q, better=0))
-        t.trades_to_execute = repo
-
     async def random(self, q=0): # this is stupid random trades.
         t=self; m = t.master
         q = q or m.sp["quantity"]
