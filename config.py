@@ -66,6 +66,7 @@ config = {
       "client_id": "",
       "client_pk": "",
       "connect_to": ["distributor.py"],
+      "modify": "mock_modify_order", # real_ || mock_ : what modif function to use (can't get modify_order to work)
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },
         "paul": { "bound": 5 },
