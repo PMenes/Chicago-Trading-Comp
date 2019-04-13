@@ -28,23 +28,7 @@ class MarketMaker(Trader):
         self.slowdown = 0 # for dev. in seconds. Artificially raises the time between each update
         u.delfile(f'.logs/mas.txt')
 
-        self.pairs = {
-            "KM":{"avg":-0.85},
-            "KN":{"avg":-0.96},
-            "MN":{"avg":-0.11},
-            "KQ":{"avg":-0.84},
-            "KU":{"avg":-0.90},
-            "MQ":{"avg":0.01},
-            "NQ":{"avg":0.12},
-            "MU":{"avg":-0.05},
-            "NU":{"avg":0.06},
-            "QU":{"avg":-0.06},
-            "KV":{"avg":-1.74},
-            "MV":{"avg":-0.89},
-            "NV":{"avg":-0.78},
-            "QV":{"avg":-0.90},
-            "UV":{"avg":-0.84}
-        }
+        self.pairs = self.c["case1-ma"]
 
 
 class TraderCycle(BaseCycle):
