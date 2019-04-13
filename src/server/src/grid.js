@@ -49,15 +49,16 @@ Grid.prototype = {
   generate: function() {
     var t = this; var kp={}; var u = updater; ul = u.lowercharts
     t.dft = {c:3, cols:updater.kcharts}
+    // console.log(t.dft)
     kp.r1 = t.line("title", {sr:2})
     u.upperlines.map((v,i) => t.line(`${v}-num`) )
     kp.r2 = t.line("chart", {sr:20, chart:1})
     kp.r3 = u.lowerlines.map(v=> t.line(`${v}_pos-num`))
 
-    r = 11; "cycles,trades,volume,pnl,fines".split(",").map((v,i)=>{
+    r = 9; "cycles,trades,volume,pnl,fines".split(",").map((v,i)=>{
       t.line(`${v}`, {r:r+i, sr:1, c:1, cols:["label", "num"]})
     })
-    r = 17; u.fines.map((n, x)=> {
+    r = 15; u.fines.map((n, x)=> {
       ;["name"].concat(u.fine_types).map((v, i) => t.box(`${n}-${v}-num-fines`, {r: r+i, c:1+x}))
     })
 
@@ -97,11 +98,12 @@ Grid.prototype = {
     var t = this; var x
     $(".label").each((i,el)=>$(el).html(el.id.split("-")[0]+":"))
     updater.newMsg(ht[thiscase])
-    $("#pnl-label").html("Exch. pnl:")
-    $("#fines-label").html("Exch. fines:")
+    $("#pnl-label").html("Xch pnl:")
+    $("#fines-label").html("Xch fines:")
     updater.fines.map((n, x)=> {
       $(`#${n}-name-num-fines`).html(`${n} fines`)
     })
+    updater.afterGrid()
     return this
   }
 }

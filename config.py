@@ -94,7 +94,7 @@ config = {
       "strategies": {
         "random": { "better": 0.01, "quantity": 1 },
         "paul": { "bound": 5 },
-        "christian": { "quantity": 10, "better":0 }
+        "christian": { "quantity": 15, "step":0.03 }
       }
     },
     "xcpt1.py": {
@@ -142,5 +142,22 @@ config = {
     "Q" : {"flag":"August", "n":8},
     "U" : {"flag":"September", "n":9},
     "V" : {"flag":"October", "n":10}
+  },
+  "case1-ma": {
+    "KM":{"avg":-0.85},
+    "KN":{"avg":-0.96},
+    "MN":{"avg":-0.11},
+    "KQ":{"avg":-0.84},
+    "KU":{"avg":-0.90},
+    "MQ":{"avg":0.01},
+    "NQ":{"avg":0.12},
+    "MU":{"avg":-0.05},
+    "NU":{"avg":0.06},
+    "QU":{"avg":-0.06},
+    "KV":{"avg":-1.74},
+    "MV":{"avg":-0.89},
+    "NV":{"avg":-0.78},
+    "QV":{"avg":-0.90},
+    "UV":{"avg":-0.84}
   }
 }

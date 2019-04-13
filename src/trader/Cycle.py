@@ -85,10 +85,9 @@ class BaseCycle():
         t.perf.step("prepared")
 
     # normally, don't touch it
-    async def distribute(self):
-        t = self; m = t.master
-        if not len(m.p["connect_to"]) or not t.num % int(t.every) == 0: return
 
+    def buildsnd(self):
+        t = self; m = t.master
         snd = {"action": "newMsg", "gpos": t.pos, "assets":{}, "perf": t.perf.steps}
         for k in "fines,meta".split(","): snd[k] = getattr(self, k)
         # t.warning(t.fills)
@@ -99,6 +98,13 @@ class BaseCycle():
                 "orders": { "bids": a.obids.lsth(), "asks": a.oasks.lsth()},
                 "fills": t.fills[k]
             }
+        return snd
+
+    async def distribute(self):
+        t = self; m = t.master
+        if not len(m.p["connect_to"]) or not t.num % int(t.every) == 0: return
+
+        snd = self.buildsnd()
 
         try:
             dist = m.p["connect_to"][0]

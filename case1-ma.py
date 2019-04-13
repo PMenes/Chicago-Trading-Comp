@@ -26,8 +26,26 @@ class MarketMaker(Trader):
         self.mult = lambda s, p: {"pnl":1, "price":1, "pos":1}.get(p, s["pos"])
 
         self.slowdown = 0 # for dev. in seconds. Artificially raises the time between each update
-        self.pairs = {}
         u.delfile(f'.logs/mas.txt')
+
+        self.pairs = {
+            "KM":{"avg":-0.85},
+            "KN":{"avg":-0.96},
+            "MN":{"avg":-0.11},
+            "KQ":{"avg":-0.84},
+            "KU":{"avg":-0.90},
+            "MQ":{"avg":0.01},
+            "NQ":{"avg":0.12},
+            "MU":{"avg":-0.05},
+            "NU":{"avg":0.06},
+            "QU":{"avg":-0.06},
+            "KV":{"avg":-1.74},
+            "MV":{"avg":-0.89},
+            "NV":{"avg":-0.78},
+            "QV":{"avg":-0.90},
+            "UV":{"avg":-0.84}
+        }
+
 
 class TraderCycle(BaseCycle):
     def __init__(self, master):
@@ -41,32 +59,17 @@ class TraderCycle(BaseCycle):
     async def onMarketChange(self, asset):
         return
 
-    def tradeone(self, q, a):
-        t = self; m = t.master
-        cls = a.mbids if q>0 else a.masks
-        # h = {"price": cls.oppo.best, "quantity": q, "ishedge":1}
-        h = {"order_type": "M", "quantity": q, "ishedge":1}
-        t.trades_to_execute.append([cls.orders.place_order, h])
 
-    def tradespread(self, q, a1, a2):
-        if q == 0: return
-        self.warning("trading", f"{a1.name}{a2.name}", q)
-        self.tradeone(q, a1); self.tradeone(-q, a2)
 
-    async def christian(self): # this is stupid random trades.
+    async def stats(self):
         t = self; m = t.master
-        # parameters:
-        mxcycles=200
+        mxcycles=1000
         if t.num == mxcycles:
-            if collect:
-                t.info("final=", m.pairs)
-            else:
-                for k,pr in m.pairs.items():
-                    log.info(f'{k},{pr["tot"]/pr["len"]},{pr["min"]},{pr["max"]}')
-        if t.num > mxcycles: return
-        lbk = lookback = 30
-        siz = size_of_spread = 9
-        collect = 1 # collecting statistics only if truthy
+            t.info(m.pairs)
+            for k,pr in m.pairs.items():
+                t.info(f',{k},{round(pr["tot"]/pr["len"],2)},{pr["min"]},{pr["max"]}')
+            throw(ValueError("done"))
+
         for k1,a1 in t.assets.items():
             if not (a1.mbids.best != 0 and a1.masks.best != 0): continue
             for k2,a2 in t.assets.items():
@@ -74,48 +77,77 @@ class TraderCycle(BaseCycle):
                 if not (a2.mbids.best != 0 and a2.masks.best != 0): continue
                 pair = f'{a1.name}{a2.name}'
                 diff = round(a1.mid["price"] - a2.mid["price"], 2)
-                if collect:
-                    pr = m.pairs[f"{k1}{k2}"] = m.pairs.get(f"{k1}{k2}", {"tot":0, "len":0, "min":100000, "max":-100000})
-                    pr["tot"] += diff; pr["len"] += 1
-                    pr["max"] = max(diff, pr["max"]); pr["min"] = min(diff, pr["min"])
-                else:
-                    pr = m.pairs[f"{k1}{k2}"] = m.pairs.get(f"{k1}{k2}", {"histo":[], "ma":0, "pos":0, "dma":0, "res":0})
-                    pr["histo"].append(diff)
-                    if len(pr["histo"]) < lookback: continue # wait for full lookback history
-                    if pr["ma"] == 0: # update movving averages
-                        tot=0
-                        for i in pr["histo"]: tot+=i
-                        pr["ma"] = round(tot/lookback)
-                    else:
-                        pr["ma"] += -pr["histo"][0]/lbk + pr["histo"][-1]/lbk
+                pr = m.pairs[f"{k1}{k2}"] = m.pairs.get(f"{k1}{k2}", {"tot":0, "len":0, "min":100000, "max":-100000})
+                pr["tot"] += diff; pr["len"] += 1
+                pr["max"] = max(diff, pr["max"]); pr["min"] = min(diff, pr["min"])
 
-                    dma = diff - pr["ma"]
-                    th = treshold = 0.1
-                    if pr["dma"] and u.sign(pr["dma"]) != u.sign(dma):
-                        t.warning("closing", pair)
-                        t.tradespread(siz * -pr["pos"], a1, a2) # will do nothing if pr["pos"] == sens
-                        res = pr["pos"] * (pr["dma"] -dma)
-                        pr["res"] += res
-                        t.debug("traded", pair, "closed", "res=", res, "tot=", pr["res"])
-                        pr["pos"] = 0; pr["dma"] = 0
-                    if abs(dma) > abs(th):
-                        sens = u.sign(dma-th)
-                        if pr["pos"] != sens:
-                            t.tradespread(siz * (sens - pr["pos"]), a1, a2) # will do nothing if pr["pos"] == sens
-                            pr["pos"] = sens; pr["dma"] = dma
-                            t.debug("traded", pair, "opened", sens, "diff=", diff, "dma=", dma)
+    def tradeone(self, q, a):
+        t = self; m = t.master; cls = a.obids if q>0 else a.oasks
+        t.trades_to_execute.append([cls.place_order, {"order_type": "M", "quantity": q, "ishedge":1}])
 
+    def limitsok(self, q, pair):
+        t = self; m = t.master
+        def okone(qq, a):
+            m.store[a.name] = (m.store.get(a.name) or a.status["pos"]) + qq
+            return abs(m.store[a.name]) < 1000
+        return okone(q, t.assets[pair[:1]]) and okone(-q, t.assets[pair[-1:]])
 
+    def tradespread(self, q, pair):
+        t = self; m = t.master
+        if q == 0 or not self.limitsok(q, pair): return
+        self.tradeone(q, t.assets[pair[:1]]); self.tradeone(-q, t.assets[pair[-1:]])
+        return 1
 
-                # t.logger.debug("cycle_ma", f',{pair},{diff}')
+    def buildsnd(self):
+        t = self; m = t.master
+        snd = super().buildsnd()
+        snd["limits"] = m.store
+        snd["assets"] = {}
+        for k,v in m.pairs.items():
+            snd["assets"][k] = {"status":v}
+        return snd
 
-        #         sens = 1 if pr["histo"][-1] >= pr["ma"] else -1 # now trade!
-        #         if pair == "KM":
-        #             self.warning(sens, "last=", pr["histo"][-1], "ma=", pr["ma"], "a1", a1.mid["price"], "a2", a2.mid["price"])
-        #         self.tradespread(siz * (sens - pr["pos"]), a1, a2) # will do nothing if pr["pos"] == sens
-        #         pr["pos"] = sens
-        #
-        # self.info("keys", len(m.pairs.keys()), ",".join(m.pairs.keys()))
+    def pairdiff(self, pair):
+        t = self; m = t.master
+        price = lambda a: a.mid["price"] if a.mbids.best != 0 and a.masks.best != 0 else 0
+        p1 = price(t.assets[pair[:1]]); p2 = price(t.assets[pair[-1:]])
+        return round(p1-p2, 2) if p1 and p2 else 0
+
+    async def christian(self): # this is stupid random trades.
+        t = self; m = t.master
+        # mxcycles=2000
+        # if t.num == mxcycles:
+        #     t.info("final=", m.pairs)
+        #     throw(ValueError("done"))
+
+        # parameters
+        siz = size_of_spread = m.sp["quantity"] # todo: put in config both siz and step
+        step = m.sp["step"] # we probably pay 0.04 to open and cancel spread, no point for less. To be tested
+
+        m.store = {}
+        for pair,pr in m.pairs.items():
+            pri = self.pairdiff(pair)
+            if not pri: continue
+
+            if not pr.get("pos"): pr.update({"pos":0, "cur": 0})
+
+            pr["cur"] = pri                             # current price
+            pos = pr["pos"]                             # current pos
+            dma = pr["dma"] = pri - pr["avg"]           # difference with the "real" price
+            tgt = pr["tgt"] = - int(round(dma/step, 0)) # if dma > 0, we should sell
+            sens = u.sign(tgt - pos) or 1;              # ex: dma>0 -> tgt = -10, pos = -7, sign = sign(-3) = -1
+
+            def trade():
+                for i in range(pos, tgt, sens):
+                    if t.tradespread(siz * sens, pair): pr["pos"] += sens
+                return pr["pos"]
+
+            if tgt == 0 or u.sign(tgt) != u.sign(pr["pos"]): pos = trade() # came back to mean: liquidate position
+
+            # if abs(pr["pos"]) - abs(tgt) > 6: pos = trade() # not yet to mean, but lock in some profit in case it goes back
+
+            if abs(tgt) > abs(pos): trade() # increase position
+
 
 if __name__ == "__main__":
     print(f"=========== Serving on {u.MyAddr().local()} ===========")

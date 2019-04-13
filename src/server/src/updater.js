@@ -16,8 +16,11 @@ var Update = class {
 
   init() { // when we receive the config
     var t = this; t.ok = 1
-    t.fine_types = "val,max,seconds".split(",")
+    t.fine_types = t.fine_types || "val,max,seconds".split(",")
     $(window).trigger('configok')
+  }
+  afterGrid() {
+    // console.log("coucou")
   }
 
   newMsg(m) {
@@ -46,6 +49,7 @@ var Update = class {
 
   fillChart(k, asset, sums) {
     var t = this
+    console.log(k, asset, t.assets)
     var h = Object.assign(t.assets[k], asset.status)
     h.name = k // remove the # which screws up everything
 
@@ -59,6 +63,7 @@ var Update = class {
     var data = {orders:[],market:[],fills:[]}; var orders = {}
     Object.keys(data).forEach(typ=>{
       "bids,asks".split(",").forEach(boa=>{
+        console.log(typ, boa, asset)
         asset[typ][boa].forEach(x=>{
           mm.min = Math.min(x.price, mm.min); mm.max = Math.max(x.price, mm.max)
           if(x.size>0) data[typ].push(Object.assign({K:h.K, flag:h.flag, source:typ, boa:boa}, x))
